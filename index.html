@@ -221,7 +221,7 @@
             </div>
             <div class="interview-container">
                 <div class="ai-avatar">
-                    <div class="avatar-dot id="avatarDot""></div>
+                    <div class="avatar-dot" id="avatarDot"></div>
                     <span class="ai-name">面接官 AI</span>
                 </div>
                 <div class="ai-speech" id="aiSpeech">
@@ -280,7 +280,7 @@
         // 要素の取得
         const startInterviewBtn = document.getElementById('startInterviewBtn');
         const aiSpeech = document.getElementById('aiSpeech');
-        const avatarDot = document.querySelector('.avatar-dot');
+        const avatarDot = document.getElementById('avatarDot');
         const recordBtn = document.getElementById('recordBtn');
         const stopBtn = document.getElementById('stopBtn');
         const recordingStatus = document.getElementById('recordingStatus');
@@ -294,9 +294,9 @@
         
         // 模擬質問リスト
         const questions = [
-            「それでは最初に、自己紹介を1分程度でお願いします。」,
-            「あなたが学生時代に最も力を入れたことは何ですか？」,
-            「ご自身の『強み』と、それを表すエピソードを教えてください。」
+            "「それでは最初に、自己紹介を1分程度でお願いします。」",
+            "「あなたが学生時代に最も力を入れたことは何ですか？」",
+            "「ご自身の『強み』と、それを表すエピソードを教えてください。」"
         ];
         let currentQuestionIndex = 0;
 
@@ -374,8 +374,3 @@
                 analyzeBtn.disabled = false;
                 // スムーズに結果までスクロール
                 analysisResult.scrollIntoView({ behavior: 'smooth' });
-            }, 3000);
-        });
-    </script>
-</body>
-</html>
