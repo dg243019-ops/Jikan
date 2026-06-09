@@ -31,10 +31,12 @@
             padding-bottom: 60px;
         }
 
-        /* ヘッダー */
+        /* ヘッダー（表紙）の画像化 */
         header {
-            background-color: var(--card-bg);
-            padding: 16px;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80'); /* ★ここに画像のURLを入れます */
+            background-size: cover;
+            background-position: center;
+            padding: 40px 16px; /* 高さを出して見栄えを良くします */
             text-align: center;
             border-bottom: 1px solid #e2e8f0;
             position: sticky;
@@ -43,10 +45,11 @@
         }
 
         header h1 {
-            font-size: 1.2rem;
-            color: var(--primary);
+            font-size: 1.5rem;
+            color: #ffffff; /* 文字を白にして読みやすくします */
             font-weight: 700;
             letter-spacing: 0.05em;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* 文字の周りに影をつけてくっきりさせます */
         }
 
         /* メインコンテナ */
@@ -121,3 +124,261 @@
             height: 10px;
             background-color: var(--accent);
             border-radius: 50%;
+        }
+        
+        .avatar-dot.active {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+        }
+
+        .ai-name { font-size: 0.85rem; color: var(--text-sub); font-weight: bold; }
+        .ai-speech { font-size: 0.95rem; color: var(--text-main); }
+
+        /* 機能2: 録音コントロール */
+        .recording-status {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--danger);
+            margin-bottom: 12px;
+            font-weight: bold;
+            display: none;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 12px;
+            border-radius: 8px;
+        }
+
+        /* 機能3: AI分析結果 */
+        .analysis-result {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #edf2f7;
+            display: none;
+        }
+
+        .score-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 16px;
+        }
+
+        .score-box {
+            text-align: center;
+        }
+
+        .score-num {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .score-label {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+        }
+
+        .feedback-text {
+            font-size: 0.9rem;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* ローディングアニメーション */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e2e8f0;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>SmartPrep AI</h1>
+    </header>
+
+    <main>
+        <section class="card">
+            <div class="card-title">
+                <span>🤖</span> AI模擬試験官
+            </div>
+            <div class="interview-container">
+                <div class="ai-avatar">
+                    <div class="avatar-dot" id="avatarDot"></div>
+                    <span class="ai-name">面接官 AI</span>
+                </div>
+                <div class="ai-speech" id="aiSpeech">
+                    「準備はよろしいですか？『面接を開始する』を押すと、私から質問を投げかけます。」
+                </div>
+            </div>
+            <button class="btn btn-primary" id="startInterviewBtn">面接を開始する</button>
+        </section>
+
+        <section class="card">
+            <div class="card-title">
+                <span>🎙️</span> 振り返り録音
+            </div>
+            <div class="recording-status" id="recordingStatus">● 録音中...</div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-outline" id="recordBtn" disabled>録音スタート</button>
+                <button class="btn btn-danger" id="stopBtn" style="display: none;">ストップ</button>
+            </div>
+            <audio id="audioPlayback" controls></audio>
+        </section>
+
+        <section class="card">
+            <div class="card-title">
+                <span>📊</span> AIデータ分析
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 12px;">
+                録音した面接データをAIに送信して、話し方や内容のフィードバックを受け取ります。
+            </p>
+            <button class="btn btn-outline" id="analyzeBtn" disabled>データをAIに送って分析</button>
+
+            <div class="loader" id="loader">
+                <div class="spinner"></div>
+                <p style="font-size: 0.85rem; color: var(--text-sub);">AIがあなたの面接を分析中...</p>
+            </div>
+
+            <div class="analysis-result" id="analysisResult">
+                <div class="score-container">
+                    <div class="score-box">
+                        <div class="score-num">85<span style="font-size: 1rem">点</span></div>
+                        <div class="score-label">総合評価</div>
+                    </div>
+                    <div class="score-box">
+                        <div class="score-num">A</div>
+                        <div class="score-label">話すスピード</div>
+                    </div>
+                </div>
+                <div class="feedback-text">
+                    <strong>【AIフィードバック】</strong><br>
+                    結論からハキハキと話せていて非常に好印象です！「えっと」などの無駄な言葉が少し多めなので、一呼吸置いてから話し始めるとさらに良くなります。
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // 要素の取得
+        const startInterviewBtn = document.getElementById('startInterviewBtn');
+        const aiSpeech = document.getElementById('aiSpeech');
+        const avatarDot = document.getElementById('avatarDot');
+        const recordBtn = document.getElementById('recordBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const recordingStatus = document.getElementById('recordingStatus');
+        const audioPlayback = document.getElementById('audioPlayback');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loader = document.getElementById('loader');
+        const analysisResult = document.getElementById('analysisResult');
+
+        let mediaRecorder;
+        let audioChunks = [];
+        
+        // 模擬質問リスト
+        const questions = [
+            "「それでは最初に、自己紹介を1分程度でお願いします。」",
+            "「あなたが学生時代に最も力を入れたことは何ですか？」",
+            "「ご自身の『強み』と、それを表すエピソードを教えてください。」"
+        ];
+        let currentQuestionIndex = 0;
+
+        // 機能1: 擬似AI模擬面接
+        startInterviewBtn.addEventListener('click', () => {
+            if (currentQuestionIndex < questions.length) {
+                avatarDot.classList.add('active');
+                aiSpeech.innerText = "考え中...";
+                
+                // 人間味のある間を演出
+                setTimeout(() => {
+                    aiSpeech.innerText = questions[currentQuestionIndex];
+                    startInterviewBtn.innerText = "次の質問へ";
+                    recordBtn.disabled = false; // 録音を許可
+                    currentQuestionIndex++;
+                }, 1000);
+            } else {
+                aiSpeech.innerText = "「お疲れ様でした。これで面接練習は終了です。下のボタンからAI分析を行ってください。」";
+                avatarDot.classList.remove('active');
+                startInterviewBtn.disabled = true;
+                startInterviewBtn.innerText = "面接終了";
+            }
+        });
+
+        // 機能2: 実際の録音機能 (Web Audio API)
+        recordBtn.addEventListener('click', async () => {
+            audioChunks = [];
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioPlayback.src = audioUrl;
+                    analyzeBtn.disabled = false; // 分析ボタンを有効化
+                    analyzeBtn.classList.remove('btn-outline');
+                    analyzeBtn.classList.add('btn-success');
+                };
+
+                mediaRecorder.start();
+                recordingStatus.style.display = 'block';
+                recordBtn.style.display = 'none';
+                stopBtn.style.display = 'inline-flex';
+            } catch (err) {
+                alert('マイクの許可が必要です。設定を確認してください。');
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            mediaRecorder.stop();
+            // マイクのストリームを停止してアイコンを消す
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            
+            recordingStatus.style.display = 'none';
+            recordBtn.style.display = 'inline-flex';
+            stopBtn.style.display = 'none';
+            recordBtn.innerText = "もう一度録音する";
+        });
+
+        // 機能3: AIデータ分析のシミュレーション
+        analyzeBtn.addEventListener('click', () => {
+            loader.style.display = 'block';
+            analysisResult.style.display = 'none';
+            analyzeBtn.disabled = true;
+
+            // 3秒後に分析結果を表示（裏でAIが考えている風）
+            setTimeout(() => {
+                loader.style.display = 'none';
+                analysisResult.style.display = 'block';
+                analyzeBtn.disabled = false;
+                // スムーズに結果までスクロール
+                analysisResult.scrollIntoView({ behavior: 'smooth' });
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
