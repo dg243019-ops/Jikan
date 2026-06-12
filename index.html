@@ -224,7 +224,39 @@
         .ai-name { font-size: 0.85rem; color: var(--text-sub); font-weight: bold; }
         .ai-speech { font-size: 0.95rem; color: var(--text-main); }
 
-        /* 面接メモエリア */
+        /* タブ切り替え（録音 / テキスト入力） */
+        .tab-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-sub);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background-color: #f1f5f9;
+            color: var(--primary);
+        }
+
+        /* 入力エリアの表示制御 */
+        .input-section {
+            display: none;
+        }
+        .input-section.active {
+            display: block;
+        }
+
+        /* 面接メモ・テキスト回答エリア共通 */
         .memo-textarea {
             width: 100%;
             height: 150px;
@@ -241,7 +273,7 @@
             border-color: var(--primary);
         }
 
-        /* 機能2: 録音コントロール */
+        /* 録音コントロール */
         .recording-status {
             text-align: center;
             font-size: 0.85rem;
@@ -351,22 +383,31 @@
         </section>
 
         <section class="card">
-            <div class="card-title">
-                <span>📝</span> 回答用のメモスペース
+            <div class="tab-container">
+                <button class="tab-btn active" id="tabVoiceBtn">🎙️ 声で回答を録音する</button>
+                <button class="tab-btn" id="tabTextBtn">✍️ 文字で回答を入力する</button>
             </div>
-            <textarea class="memo-textarea" id="memoField" placeholder="質問の回答や、話したいキーワードをここに自由にメモできます..."></textarea>
+
+            <div class="input-section active" id="sectionVoice">
+                <div class="recording-status" id="recordingStatus">● 録音中...</div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-outline" id="recordBtn" disabled>録音スタート</button>
+                    <button class="btn btn-danger" id="stopBtn" style="display: none;">ストップ</button>
+                </div>
+                <audio id="audioPlayback" controls></audio>
+            </div>
+
+            <div class="input-section" id="sectionText">
+                <textarea class="memo-textarea" id="textResponseField" placeholder="質問に対する回答の文章をここに入力してください..." disabled></textarea>
+                <p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px; text-align: right;" id="charCount">0 文字</p>
+            </div>
         </section>
 
         <section class="card">
             <div class="card-title">
-                <span>🎙️</span> 振り返り録音
+                <span>📝</span> 面接用メモ（自由記入用）
             </div>
-            <div class="recording-status" id="recordingStatus">● 録音中...</div>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-outline" id="recordBtn" disabled>録音スタート</button>
-                <button class="btn btn-danger" id="stopBtn" style="display: none;">ストップ</button>
-            </div>
-            <audio id="audioPlayback" controls></audio>
+            <textarea class="memo-textarea" id="memoField" placeholder="忘れたくないキーワードやアイデアの書き留めに自由にお使いください..."></textarea>
         </section>
 
         <section class="card">
@@ -374,24 +415,24 @@
                 <span>📊</span> AIデータ分析
             </div>
             <p style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 12px;">
-                録音した面接データをAIに送信して、話し方や内容のフィードバックを受け取ります。
+                回答データをAIに送信して、内容のフィードバックを受け取ります。
             </p>
             <button class="btn btn-outline" id="analyzeBtn" disabled>データをAIに送って分析</button>
 
             <div class="loader" id="loader">
                 <div class="spinner"></div>
-                <p style="font-size: 0.85rem; color: var(--text-sub);">AIがあなたの面接を分析中...</p>
+                <p style="font-size: 0.85rem; color: var(--text-sub);">AIがあなたの回答を分析中...</p>
             </div>
 
             <div class="analysis-result" id="analysisResult">
                 <div class="score-container">
                     <div class="score-box">
-                        <div class="score-num">85<span style="font-size: 1rem">点</span></div>
+                        <div class="score-num" id="scoreValue">85<span style="font-size: 1rem">点</span></div>
                         <div class="score-label">総合評価</div>
                     </div>
                     <div class="score-box">
-                        <div class="score-num">A</div>
-                        <div class="score-label">話すスピード</div>
+                        <div class="score-num" id="speedValue">A</div>
+                        <div class="score-label" id="speedLabel">話すスピード</div>
                     </div>
                 </div>
                 <div class="feedback-text" id="feedbackText">
@@ -413,14 +454,27 @@
         const startInterviewBtn = document.getElementById('startInterviewBtn');
         const aiSpeech = document.getElementById('aiSpeech');
         const avatarDot = document.getElementById('avatarDot');
+        
+        // タブ関連
+        const tabVoiceBtn = document.getElementById('tabVoiceBtn');
+        const tabTextBtn = document.getElementById('tabTextBtn');
+        const sectionVoice = document.getElementById('sectionVoice');
+        const sectionText = document.getElementById('sectionText');
+        const textResponseField = document.getElementById('textResponseField');
+        const charCount = document.getElementById('charCount');
+
         const recordBtn = document.getElementById('recordBtn');
         const stopBtn = document.getElementById('stopBtn');
         const recordingStatus = document.getElementById('recordingStatus');
         const audioPlayback = document.getElementById('audioPlayback');
+        
         const analyzeBtn = document.getElementById('analyzeBtn');
         const loader = document.getElementById('loader');
         const analysisResult = document.getElementById('analysisResult');
         const feedbackText = document.getElementById('feedbackText');
+        const scoreValue = document.getElementById('scoreValue');
+        const speedValue = document.getElementById('speedValue');
+        const speedLabel = document.getElementById('speedLabel');
         const memoField = document.getElementById('memoField');
 
         let mediaRecorder;
@@ -428,6 +482,7 @@
         let targetSchool = "";
         let questions = [];
         let currentQuestionIndex = 0;
+        let currentMode = "voice"; // "voice" または "text"
 
         // 志望校決定ボタンを押した時の処理
         saveSchoolBtn.addEventListener('click', () => {
@@ -440,13 +495,12 @@
             headerSchoolName.innerText = `志望校: ${targetSchool}`;
             generateQuestions(targetSchool);
 
-            schoolModal.style.display = 'flex';
             schoolModal.style.display = 'none';
             startInterviewBtn.disabled = false;
             aiSpeech.innerText = `「${targetSchool}の模擬面接の準備ができました。求める人物像を分析しましたので、『面接を開始する』を押してください。」`;
         });
 
-        // 学校の種類に応じた質問自動生成システム
+        // 学校の種類に応じた質問自動生成
         function generateQuestions(schoolName) {
             let type = "大学";
             if (schoolName.includes("高校")) type = "高校";
@@ -473,6 +527,63 @@
             }
         }
 
+        // タブ切り替えの挙動
+        tabVoiceBtn.addEventListener('click', () => {
+            currentMode = "voice";
+            tabVoiceBtn.classList.add('active');
+            tabTextBtn.classList.remove('active');
+            sectionVoice.classList.add('active');
+            sectionText.classList.remove('active');
+            checkAnalyzeButtonState();
+        });
+
+        tabTextBtn.addEventListener('click', () => {
+            currentMode = "text";
+            tabVoiceBtn.classList.remove('active');
+            tabTextBtn.classList.add('active');
+            sectionVoice.classList.remove('active');
+            sectionText.classList.add('active');
+            checkAnalyzeButtonState();
+        });
+
+        // 文字入力時のカウントとボタン制御
+        textResponseField.addEventListener('input', () => {
+            const length = textResponseField.value.length;
+            charCount.innerText = `${length} 文字`;
+            checkAnalyzeButtonState();
+        });
+
+        // 分析ボタンを押せるかどうかの判定
+        function checkAnalyzeButtonState() {
+            if (currentMode === "voice") {
+                // 録音データがある場合
+                if (audioPlayback.src && !audioPlayback.src.endsWith('/')) {
+                    enableAnalyzeButton();
+                } else {
+                    disableAnalyzeButton();
+                }
+            } else {
+                // テキスト入力が1文字以上ある場合
+                if (textResponseField.value.trim().length > 0) {
+                    enableAnalyzeButton();
+                } else {
+                    disableAnalyzeButton();
+                }
+            }
+        }
+
+        function enableAnalyzeButton() {
+            analyzeBtn.disabled = false;
+            analyzeBtn.classList.remove('btn-outline');
+            analyzeBtn.classList.add('btn-success');
+        }
+
+        function disableAnalyzeButton() {
+            analyzeBtn.disabled = true;
+            analyzeBtn.classList.remove('btn-success');
+            analyzeBtn.classList.add('btn-outline');
+        }
+
         // 機能1: 擬似AI模擬面接
         startInterviewBtn.addEventListener('click', () => {
             if (currentQuestionIndex < questions.length) {
@@ -483,10 +594,11 @@
                     aiSpeech.innerText = questions[currentQuestionIndex];
                     startInterviewBtn.innerText = "次の質問へ";
                     recordBtn.disabled = false;
+                    textResponseField.disabled = false; // テキストエリアの入力を許可
                     currentQuestionIndex++;
                 }, 1200);
             } else {
-                aiSpeech.innerText = `「お疲れ様でした。これで${targetSchool}の面接練習はすべて終了です。下のボタンからAIデータ分析を行ってください。」`;
+                aiSpeech.innerText = `「お疲れ様でした。これで${targetSchool}の面接練習はすべて終了です。回答データをAIに送って分析してみましょう。」`;
                 avatarDot.classList.remove('active');
                 startInterviewBtn.disabled = true;
                 startInterviewBtn.innerText = "面接終了";
@@ -508,9 +620,7 @@
                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                     const audioUrl = URL.createObjectURL(audioBlob);
                     audioPlayback.src = audioUrl;
-                    analyzeBtn.disabled = false;
-                    analyzeBtn.classList.remove('btn-outline');
-                    analyzeBtn.classList.add('btn-success');
+                    checkAnalyzeButtonState();
                 };
 
                 mediaRecorder.start();
@@ -532,7 +642,7 @@
             recordBtn.innerText = "もう一度録音する";
         });
 
-        // 機能3: AIデータ分析のシミュレーション
+        // 機能3: AIデータ分析のシミュレーション（音声・文字で内容を変化）
         analyzeBtn.addEventListener('click', () => {
             loader.style.display = 'block';
             analysisResult.style.display = 'none';
@@ -543,31 +653,42 @@
                 analysisResult.style.display = 'block';
                 analyzeBtn.disabled = false;
                 
-                feedbackText.innerHTML = `<strong>【AIフィードバック】</strong><br>
-                結論からハキハキと話せていて非常に好印象です！<strong>${targetSchool}が求める「主体性」や「熱意」</strong>が言葉からしっかりと伝わってきます。「えっと」などの無駄な言葉が少し多めなので、一呼吸置いてから話し始めるとさらに良くなりますよ。`;
+                if (currentMode === "voice") {
+                    scoreValue.innerHTML = `88<span style="font-size: 1rem">点</span>`;
+                    speedValue.innerText = "A";
+                    speedLabel.innerText = "話すスピード";
+                    feedbackText.innerHTML = `<strong>【AIフィードバック（音声分析）】</strong><br>
+                    結論からハキハキと声に出せていて非常に好印象です！<strong>${targetSchool}が求める「主体性」や「熱意」</strong>が言葉からしっかりと伝わってきます。「えっと」などの無駄な言葉が少し入っているので、一呼吸置いてから話し始めるとさらに良くなりますよ。`;
+                } else {
+                    scoreValue.innerHTML = `92<span style="font-size: 1rem">点</span>`;
+                    speedValue.innerText = "S";
+                    speedLabel.innerText = "文章の構成度";
+                    feedbackText.innerHTML = `<strong>【AIフィードバック（テキスト分析）】</strong><br>
+                    入力された文章は論理的で、非常に綺麗にまとめられています！<strong>${targetSchool}のアドミッションポリシー</strong>をしっかり意識した具体的なエピソードが含まれており評価が高いです。この文章を実際の面接でも覚えず自然に話せるよう、キーワードを頭に染み込ませておきましょう。`;
+                }
                 
                 analysisResult.scrollIntoView({ behavior: 'smooth' });
             }, 3000);
         });
 
-        // ★追加されたリセット機能
+        // 最初からやり直すリセット機能
         globalResetBtn.addEventListener('click', () => {
-            const confirmReset = confirm("面接をリセットして、最初の志望校設定に戻ってもよろしいですか？（メモや録音データも消去されます）");
+            const confirmReset = confirm("面接をリセットして、最初の志望校設定に戻ってもよろしいですか？（メモや入力内容も消去されます）");
             if (!confirmReset) return;
 
-            // データの初期化
             targetSchool = "";
             questions = [];
             currentQuestionIndex = 0;
             audioChunks = [];
 
-            // 画面表示のリセット
             headerSchoolName.innerText = "志望校: 未設定";
             schoolInput.value = "";
             memoField.value = "";
+            textResponseField.value = "";
+            textResponseField.disabled = true;
+            charCount.innerText = "0 文字";
             aiSpeech.innerText = "「志望校を設定してください。」";
             
-            // ボタン類の状態リセット
             startInterviewBtn.disabled = true;
             startInterviewBtn.innerText = "面接を開始する";
             avatarDot.classList.remove('active');
@@ -579,15 +700,18 @@
             recordingStatus.style.display = 'none';
             
             audioPlayback.src = "";
-            
-            analyzeBtn.disabled = true;
-            analyzeBtn.classList.remove('btn-success');
-            analyzeBtn.classList.add('btn-outline');
+            disableAnalyzeButton();
             
             analysisResult.style.display = 'none';
             loader.style.display = 'none';
 
-            // ポップアップを再び表示
+            // ボイスモードをデフォルトに戻す
+            currentMode = "voice";
+            tabVoiceBtn.classList.add('active');
+            tabTextBtn.classList.remove('active');
+            sectionVoice.classList.add('active');
+            sectionText.classList.remove('active');
+
             schoolModal.style.display = 'flex';
         });
     </script>
