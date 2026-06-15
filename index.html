@@ -556,14 +556,12 @@
         // 分析ボタンを押せるかどうかの判定
         function checkAnalyzeButtonState() {
             if (currentMode === "voice") {
-                // 録音データがある場合
-                if (audioPlayback.src && !audioPlayback.src.endsWith('/')) {
+                if (audioPlayback.src && !audioPlayback.src.endsWith('/') && audioPlayback.src !== window.location.href) {
                     enableAnalyzeButton();
                 } else {
                     disableAnalyzeButton();
                 }
             } else {
-                // テキスト入力が1文字以上ある場合
                 if (textResponseField.value.trim().length > 0) {
                     enableAnalyzeButton();
                 } else {
@@ -594,7 +592,8 @@
                     aiSpeech.innerText = questions[currentQuestionIndex];
                     startInterviewBtn.innerText = "次の質問へ";
                     recordBtn.disabled = false;
-                    textResponseField.disabled = false; // テキストエリアの入力を許可
+                    recordBtn.innerText = "録音スタート"; // 次の質問に進んだら表記を戻す
+                    textResponseField.disabled = false;
                     currentQuestionIndex++;
                 }, 1200);
             } else {
@@ -657,21 +656,19 @@
                     scoreValue.innerHTML = `88<span style="font-size: 1rem">点</span>`;
                     speedValue.innerText = "A";
                     speedLabel.innerText = "話すスピード";
-                    feedbackText.innerHTML = `<strong>【AIフィードバック（音声分析）】</strong><br>
-                    結論からハキハキと声に出せていて非常に好印象です！<strong>${targetSchool}が求める「主体性」や「熱意」</strong>が言葉からしっかりと伝わってきます。「えっと」などの無駄な言葉が少し入っているので、一呼吸置いてから話し始めるとさらに良くなりますよ。`;
+                    feedbackText.innerHTML = `<strong>【AIフィードバック（音声分析）】</strong><br>結論からハキハキと声に出せていて非常に好印象です！<strong>${targetSchool}が求める「主体性」や「熱意」</strong>が言葉からしっかりと伝わってきます。「えっと」などの無駄な言葉が少し入っているので、一呼吸置いてから話し始めるとさらに良くなりますよ。`;
                 } else {
                     scoreValue.innerHTML = `92<span style="font-size: 1rem">点</span>`;
                     speedValue.innerText = "S";
                     speedLabel.innerText = "文章の構成度";
-                    feedbackText.innerHTML = `<strong>【AIフィードバック（テキスト分析）】</strong><br>
-                    入力された文章は論理的で、非常に綺麗にまとめられています！<strong>${targetSchool}のアドミッションポリシー</strong>をしっかり意識した具体的なエピソードが含まれており評価が高いです。この文章を実際の面接でも覚えず自然に話せるよう、キーワードを頭に染み込ませておきましょう。`;
+                    feedbackText.innerHTML = `<strong>【AIフィードバック（テキスト分析）】</strong><br>入力された文章は論理的で、非常に綺麗にまとめられています！<strong>${targetSchool}のアドミッションポリシー</strong>をしっかり意識した具体的なエピソードが含まれており評価が高いです。この文章を実際の面接でも覚えず自然に話せるよう、キーワードを頭に染み込ませておきましょう。`;
                 }
                 
                 analysisResult.scrollIntoView({ behavior: 'smooth' });
             }, 3000);
         });
 
-        // 最初からやり直すリセット機能
+        // 最初からやり過すリセット機能
         globalResetBtn.addEventListener('click', () => {
             const confirmReset = confirm("面接をリセットして、最初の志望校設定に戻ってもよろしいですか？（メモや入力内容も消去されます）");
             if (!confirmReset) return;
@@ -699,13 +696,13 @@
             stopBtn.style.display = 'none';
             recordingStatus.style.display = 'none';
             
-            audioPlayback.src = "";
+            audioPlayback.removeAttribute('src'); // src属性を完全に削除して誤判定を防ぐ
+            audioPlayback.load();
             disableAnalyzeButton();
             
             analysisResult.style.display = 'none';
             loader.style.display = 'none';
 
-            // ボイスモードをデフォルトに戻す
             currentMode = "voice";
             tabVoiceBtn.classList.add('active');
             tabTextBtn.classList.remove('active');
