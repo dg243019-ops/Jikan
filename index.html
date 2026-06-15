@@ -79,7 +79,7 @@
             border-color: var(--primary);
         }
 
-        /* ヘッダー（表紙）の画像化 */
+        /* ヘッダー */
         header {
             background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80');
             background-size: cover;
@@ -111,7 +111,7 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        /* リセットエリア（ヘッダー直下） */
+        /* リセットエリア */
         .control-panel {
             max-width: 480px;
             margin: 12px auto 0;
@@ -185,7 +185,7 @@
         .btn-success { background-color: var(--success); color: white; }
         .btn-outline { background-color: transparent; border: 2px solid #e2e8f0; color: var(--text-sub); }
 
-        /* 機能1: AI模擬面接 */
+        /* AI模擬面接 */
         .interview-container {
             background: #f1f5f9;
             border-radius: 12px;
@@ -224,7 +224,7 @@
         .ai-name { font-size: 0.85rem; color: var(--text-sub); font-weight: bold; }
         .ai-speech { font-size: 0.95rem; color: var(--text-main); }
 
-        /* タブ切り替え（録音 / テキスト入力） */
+        /* タブ切り替え */
         .tab-container {
             display: flex;
             gap: 8px;
@@ -256,7 +256,7 @@
             display: block;
         }
 
-        /* 面接メモ・テキスト回答エリア共通 */
+        /* テキストエリア */
         .memo-textarea {
             width: 100%;
             height: 150px;
@@ -289,7 +289,7 @@
             border-radius: 8px;
         }
 
-        /* 機能3: AI分析結果 */
+        /* AI分析結果 */
         .analysis-result {
             margin-top: 16px;
             padding-top: 16px;
@@ -326,7 +326,7 @@
             border-left: 4px solid var(--primary);
         }
 
-        /* ローディングアニメーション */
+        /* ローディング */
         .loader {
             display: none;
             text-align: center;
@@ -398,7 +398,7 @@
             </div>
 
             <div class="input-section" id="sectionText">
-                <textarea class="memo-textarea" id="textResponseField" placeholder="質問に対する回答の文章をここに入力してください..." disabled></textarea>
+                <textarea class="memo-textarea" id="textResponseField" placeholder="質問に対する回答の文章をここを入力してください..." disabled></textarea>
                 <p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px; text-align: right;" id="charCount">0 文字</p>
             </div>
         </section>
@@ -455,7 +455,6 @@
         const aiSpeech = document.getElementById('aiSpeech');
         const avatarDot = document.getElementById('avatarDot');
         
-        // タブ関連
         const tabVoiceBtn = document.getElementById('tabVoiceBtn');
         const tabTextBtn = document.getElementById('tabTextBtn');
         const sectionVoice = document.getElementById('sectionVoice');
@@ -482,9 +481,9 @@
         let targetSchool = "";
         let questions = [];
         let currentQuestionIndex = 0;
-        let currentMode = "voice"; // "voice" または "text"
+        let currentMode = "voice";
 
-        // 志望校決定ボタンを押した時の処理
+        // 志望校決定
         saveSchoolBtn.addEventListener('click', () => {
             targetSchool = schoolInput.value.trim();
             if (targetSchool === "") {
@@ -497,10 +496,10 @@
 
             schoolModal.style.display = 'none';
             startInterviewBtn.disabled = false;
-            aiSpeech.innerText = `「${targetSchool}の模擬面接の準備ができました。求める人物像を分析しましたので、『面接を開始する』を押してください。」`;
+            aiSpeech.innerText = `「${targetSchool}の模擬面接の準備ができました。全6問の面接を行います。『面接を開始する』を押してください。」`;
         });
 
-        // 学校の種類に応じた質問自動生成
+        // 質問の自動生成（各6問に最適化）
         function generateQuestions(schoolName) {
             let type = "大学";
             if (schoolName.includes("高校")) type = "高校";
@@ -510,24 +509,33 @@
                 questions = [
                     `「それでは最初に、なぜ我が校（${schoolName}）への進学を希望されたのか、理由を教えてください。」`,
                     `「我が校では『自主性と規律』を重んじています。あなたが中学時代に一番がんばったことと、そこから学んだことは何ですか？」`,
-                    `「高校生活では勉強以外にも様々な活動がありますが、入学したら特に挑戦してみたいことはありますか？」`
+                    `「高校生活では勉強以外にも様々な活動がありますが、入学したら特に挑戦してみたいことはありますか？」`,
+                    `「部活動や委員会、地域の活動など、これまで集団行動の中であなたが一番心がけていたことを教えてください。」`,
+                    `「あなたの『長所』と『短所』を、具体的なエピソードを交えて教えてください。」`,
+                    `「もし将来、自分の思い通りにいかない壁にぶつかったとき、どのようにして乗り越えようと思いますか？」`
                 ];
             } else if (type === "専門学校") {
                 questions = [
                     `「この分野のプロを目指す上で、数ある学校の中から我が校（${schoolName}）を選んだ決定的な理由を教えてください。」`,
                     `「当校では『即戦力となる高い専門性と熱意』を求めています。あなたがこれまで何か一つのことに熱中した経験を教えてください。」`,
-                    `「将来、どんなクリエイターや技術者になりたいですか？具体的な将来の夢を聞かせてください。」`
+                    `「将来、どんなクリエイターや技術者になりたいですか？具体的な将来の夢を聞かせてください。」`,
+                    `「この業界のプロになるための勉強は厳しい面もありますが、困難に直面したとき、あなたはどうやって乗り越えようと考えていますか？」`,
+                    `「あなたがこれまでチームやグループで作業・協力したなかで、最も苦労したことと、その解決策を教えてください。」`,
+                    `「当校のオープンキャンパスや学校見学に参加した際、最も印象に残っていることや魅力を感じた部分はどこですか？」`
                 ];
             } else {
                 questions = [
                     `「まずはじめに、あなたが${schoolName}を志望する理由と、入学後に最も深く学びたい学問について教えてください。」`,
                     `「我が大学では『自ら課題を見つけ、論理的に解決する人物』を求めています。あなたがこれまでに直面した困難と、それをどう乗り越えたかを教えてください。」`,
-                    `「大学での4年間は自由な時間が多くあります。学業以外で、社会に貢献したり自己成長のために挑戦したいことはありますか？」`
+                    `「大学での4年間は自由な時間が多くあります。学業以外で、社会に貢献したり自己成長のために挑戦したいことはありますか？」`,
+                    `「最近あなたが最も関心を持った時事問題やニュースは何ですか？また、それについて自身の意見を聞かせてください。」`,
+                    `「あなたが現在関心を持っている分野や研究テーマは、将来どのように社会や社会課題の解決に役立つと考えていますか？」`,
+                    `「これまであなたが主体となって周りを巻き込み、何かを成し遂げたエピソード（リーダーシップ経験など）があれば教えてください。」`
                 ];
             }
         }
 
-        // タブ切り替えの挙動
+        // タブ切り替え
         tabVoiceBtn.addEventListener('click', () => {
             currentMode = "voice";
             tabVoiceBtn.classList.add('active');
@@ -546,14 +554,13 @@
             checkAnalyzeButtonState();
         });
 
-        // 文字入力時のカウントとボタン制御
+        // 文字数カウント
         textResponseField.addEventListener('input', () => {
             const length = textResponseField.value.length;
             charCount.innerText = `${length} 文字`;
             checkAnalyzeButtonState();
         });
 
-        // 分析ボタンを押せるかどうかの判定
         function checkAnalyzeButtonState() {
             if (currentMode === "voice") {
                 if (audioPlayback.src && !audioPlayback.src.endsWith('/') && audioPlayback.src !== window.location.href) {
@@ -582,29 +589,29 @@
             analyzeBtn.classList.add('btn-outline');
         }
 
-        // 機能1: 擬似AI模擬面接
+        // 面接進行
         startInterviewBtn.addEventListener('click', () => {
             if (currentQuestionIndex < questions.length) {
                 avatarDot.classList.add('active');
-                aiSpeech.innerText = "分析中...";
+                aiSpeech.innerText = "次の質問を読み込んでいます...";
                 
                 setTimeout(() => {
-                    aiSpeech.innerText = questions[currentQuestionIndex];
-                    startInterviewBtn.innerText = "次の質問へ";
+                    aiSpeech.innerText = `（第${currentQuestionIndex + 1}問 / 全6問）\n${questions[currentQuestionIndex]}`;
+                    startInterviewBtn.innerText = currentQuestionIndex === questions.length - 1 ? "最後の回答を終える" : "次の質問へ";
                     recordBtn.disabled = false;
-                    recordBtn.innerText = "録音スタート"; // 次の質問に進んだら表記を戻す
+                    recordBtn.innerText = "録音スタート"; 
                     textResponseField.disabled = false;
                     currentQuestionIndex++;
-                }, 1200);
+                }, 1000);
             } else {
-                aiSpeech.innerText = `「お疲れ様でした。これで${targetSchool}の面接練習はすべて終了です。回答データをAIに送って分析してみましょう。」`;
+                aiSpeech.innerText = `「お疲れ様でした。これで${targetSchool}の全6問にわたる面接練習はすべて終了です。素晴らしい受け答えでした！回答データをAIに送って総合分析をしてみましょう。」`;
                 avatarDot.classList.remove('active');
                 startInterviewBtn.disabled = true;
                 startInterviewBtn.innerText = "面接終了";
             }
         });
 
-        // 機能2: 実際の録音機能
+        // 録音機能
         recordBtn.addEventListener('click', async () => {
             audioChunks = [];
             try {
@@ -641,7 +648,7 @@
             recordBtn.innerText = "もう一度録音する";
         });
 
-        // 機能3: AIデータ分析のシミュレーション（音声・文字で内容を変化）
+        // 分析シミュレーション
         analyzeBtn.addEventListener('click', () => {
             loader.style.display = 'block';
             analysisResult.style.display = 'none';
@@ -653,22 +660,22 @@
                 analyzeBtn.disabled = false;
                 
                 if (currentMode === "voice") {
-                    scoreValue.innerHTML = `88<span style="font-size: 1rem">点</span>`;
+                    scoreValue.innerHTML = `90<span style="font-size: 1rem">点</span>`;
                     speedValue.innerText = "A";
                     speedLabel.innerText = "話すスピード";
-                    feedbackText.innerHTML = `<strong>【AIフィードバック（音声分析）】</strong><br>結論からハキハキと声に出せていて非常に好印象です！<strong>${targetSchool}が求める「主体性」や「熱意」</strong>が言葉からしっかりと伝わってきます。「えっと」などの無駄な言葉が少し入っているので、一呼吸置いてから話し始めるとさらに良くなりますよ。`;
+                    feedbackText.innerHTML = `<strong>【総合AI音声フィードバック（全6問対応版）】</strong><br>面接練習、お疲れ様でした！用意された6つの主要な質問に対して、すべて論理的な回答の軸が通っており素晴らしいです。特に、中後半の応用的な質問に対しても言葉を詰まらせずに答えられている点（スピード評価：A）が高評価です。本番もリラックスして臨んでください！`;
                 } else {
-                    scoreValue.innerHTML = `92<span style="font-size: 1rem">点</span>`;
+                    scoreValue.innerHTML = `93<span style="font-size: 1rem">点</span>`;
                     speedValue.innerText = "S";
                     speedLabel.innerText = "文章の構成度";
-                    feedbackText.innerHTML = `<strong>【AIフィードバック（テキスト分析）】</strong><br>入力された文章は論理的で、非常に綺麗にまとめられています！<strong>${targetSchool}のアドミッションポリシー</strong>をしっかり意識した具体的なエピソードが含まれており評価が高いです。この文章を実際の面接でも覚えず自然に話せるよう、キーワードを頭に染み込ませておきましょう。`;
+                    feedbackText.innerHTML = `<strong>【総合AIテキストフィードバック（全6問対応版）】</strong><br>志望動機、過去の経験、そして将来像までが全6問を通して非常に綺麗な1本のストーリーとして組み立てられています（構成度：S）。この内容であれば、面接官にあなたの熱意と適性がハッキリ伝わります。この論理構成を忘れないよう、繰り返し練習を重ねていきましょう。`;
                 }
                 
                 analysisResult.scrollIntoView({ behavior: 'smooth' });
             }, 3000);
         });
 
-        // 最初からやり過すリセット機能
+        // リセット機能
         globalResetBtn.addEventListener('click', () => {
             const confirmReset = confirm("面接をリセットして、最初の志望校設定に戻ってもよろしいですか？（メモや入力内容も消去されます）");
             if (!confirmReset) return;
@@ -696,7 +703,7 @@
             stopBtn.style.display = 'none';
             recordingStatus.style.display = 'none';
             
-            audioPlayback.removeAttribute('src'); // src属性を完全に削除して誤判定を防ぐ
+            audioPlayback.removeAttribute('src'); 
             audioPlayback.load();
             disableAnalyzeButton();
             
