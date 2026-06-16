@@ -12,7 +12,7 @@
             --text-sub: #718096;
             --primary: #4f46e5;
             --primary-hover: #4338ca;
-            --accent: #4f46e5; /* 通常の落ち着いた青系に戻しました */
+            --accent: #4f46e5;
             --danger: #ef4444;
             --success: #10b981;
         }
@@ -252,6 +252,7 @@
 
         audio { width: 100%; margin-top: 12px; border-radius: 8px; }
 
+        /* 分析結果エリア */
         .analysis-result {
             margin-top: 16px;
             padding-top: 16px;
@@ -259,10 +260,51 @@
             display: none;
         }
 
-        .score-container { display: flex; justify-content: space-around; margin-bottom: 16px; }
-        .score-box { text-align: center; }
-        .score-num { font-size: 1.8rem; font-weight: 700; color: var(--text-main); }
-        .score-label { font-size: 0.75rem; color: var(--text-sub); }
+        .main-score-box {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+        .main-score-num { font-size: 3rem; font-weight: 900; color: var(--text-main); }
+        .main-score-label { font-size: 0.8rem; color: var(--text-sub); font-weight: bold; }
+
+        /* 詳細インジケーター群 */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .metric-row {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 10px;
+        }
+        .metric-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+        .metric-name { font-weight: 600; color: var(--text-main); }
+        .metric-score { font-weight: 800; font-size: 1.1rem; color: var(--primary); }
+        .bar-container {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 1s ease-out;
+        }
+
         .feedback-text { font-size: 0.9rem; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid var(--primary); color: var(--text-main); }
 
         .loader { display: none; text-align: center; padding: 20px; }
@@ -338,12 +380,29 @@
         <section class="card">
             <div class="card-title"><span>📊</span> AIデータ分析</div>
             <button class="btn btn-outline" id="analyzeBtn" disabled>データをAIに送って分析</button>
-            <div class="loader" id="loader"><div class="spinner"></div><p style="font-size: 0.85rem; color: var(--text-sub);">AIがあなたの回答を分析中...</p></div>
+            <div class="loader" id="loader"><div class="spinner"></div><p style="font-size: 0.85rem; color: var(--text-sub);">AIが基準に沿って多角的に分析中...</p></div>
+            
             <div class="analysis-result" id="analysisResult">
-                <div class="score-container">
-                    <div class="score-box"><div class="score-num" id="scoreValue">--</div><div class="score-label">総合評価</div></div>
-                    <div class="score-box"><div class="score-num" id="speedValue">--</div><div class="score-label" id="speedLabel">評価指標</div></div>
+                <div class="main-score-box">
+                    <div class="main-score-num" id="scoreValue">--</div>
+                    <div class="main-score-label">総合判定</div>
                 </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-row">
+                        <div class="metric-info"><span class="metric-name">① アドミッション・ポリシー適合度</span><span class="metric-score" id="m1Score">-</span></div>
+                        <div class="bar-container"><div class="bar-fill" id="m1Bar"></div></div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-info"><span class="metric-name" id="m2Label">② 発話の流暢さ</span><span class="metric-score" id="m2Score">-</span></div>
+                        <div class="bar-container"><div class="bar-fill" id="m2Bar"></div></div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-info"><span class="metric-name">③ 論理的構成度・一貫性</span><span class="metric-score" id="m3Score">-</span></div>
+                        <div class="bar-container"><div class="bar-fill" id="m3Bar"></div></div>
+                    </div>
+                </div>
+
                 <div class="feedback-text" id="feedbackText"></div>
             </div>
         </section>
@@ -374,9 +433,16 @@
         const analysisResult = document.getElementById('analysisResult');
         const feedbackText = document.getElementById('feedbackText');
         const scoreValue = document.getElementById('scoreValue');
-        const speedValue = document.getElementById('speedValue');
-        const speedLabel = document.getElementById('speedLabel');
         const memoField = document.getElementById('memoField');
+
+        // 個別評価用DOM
+        const m1Score = document.getElementById('m1Score');
+        const m1Bar = document.getElementById('m1Bar');
+        const m2Label = document.getElementById('m2Label');
+        const m2Score = document.getElementById('m2Score');
+        const m2Bar = document.getElementById('m2Bar');
+        const m3Score = document.getElementById('m3Score');
+        const m3Bar = document.getElementById('m3Bar');
 
         let mediaRecorder;
         let audioChunks = [];
@@ -502,31 +568,60 @@
             recordingStatus.style.display = 'none'; recordBtn.style.display = 'inline-flex'; stopBtn.style.display = 'none'; recordBtn.innerText = "もう一度録音する";
         });
 
-        // 内面はガチ辛口の分析ロジック
+        // 【A〜D 段階評価】分析シミュレーションロジック
         analyzeBtn.addEventListener('click', () => {
             loader.style.display = 'block'; analysisResult.style.display = 'none'; analyzeBtn.disabled = true;
             setTimeout(() => {
                 loader.style.display = 'none'; analysisResult.style.display = 'block'; analyzeBtn.disabled = false;
                 
+                let rank1, rank2, rank3, totalRank;
+                let pct1, pct2, pct3; // バーを制御するパーセンテージ
+
                 if (currentMode === "voice") {
-                    scoreValue.innerHTML = `64<span style="font-size: 1rem; color: var(--danger)">点 (不合格圏内)</span>`;
-                    speedValue.innerText = "C-";
-                    speedLabel.innerText = "発話の流暢さ";
+                    m2Label.innerText = "② 発話の流暢さ・表現力";
+                    // 辛口音声判定
+                    rank1 = "C"; pct1 = 55; // ポリシー適合度
+                    rank2 = "C"; pct2 = 58; // 流暢さ
+                    rank3 = "C"; pct3 = 50; // 論理構成
+                    totalRank = "C";
+
+                    scoreValue.innerHTML = `<span style="color: var(--danger)">${totalRank}</span>`;
                     feedbackText.innerHTML = `<strong>【AI総合音声分析】</strong><br>厳しい審査結果となりました。現在のクオリティでは本番の面接を通過するのは困難です。全体的に「えっと」「あー」といった不要なつなぎ言葉が目立ち、自信のなさが声に出てしまっています。また、<strong>${targetSchool}のアドミッション・ポリシー（${capturedPolicy}）</strong>に対する理解の浅さが、中盤の回答の詰まりから透けて見えます。原稿の丸暗記を捨て、自分の言葉でハキハキと結論から話す訓練を徹底してください。`;
                 } else {
+                    m2Label.innerText = "② 語彙力・表現の豊かさ";
                     const userLen = textResponseField.value.length;
+                    
                     if (userLen < 150) {
-                        scoreValue.innerHTML = `52<span style="font-size: 1rem; color: var(--danger)">点 (要大幅改善)</span>`;
-                        speedValue.innerText = "D";
-                        speedLabel.innerText = "論理的具体性";
+                        // 著しい文字数不足
+                        rank1 = "D"; pct1 = 35;
+                        rank2 = "D"; pct2 = 40;
+                        rank3 = "D"; pct3 = 30;
+                        totalRank = "D";
+                        scoreValue.innerHTML = `<span style="color: var(--danger)">${totalRank}</span>`;
                         feedbackText.innerHTML = `<strong>【AI総合文章分析】</strong><br>現在の回答内容では合格点に遠く及びません。回答のボリューム（${userLen}文字）が圧倒的に不足しています。面接官の問いに対して上辺だけの綺麗な言葉を並べているだけで、具体的なエピソードや独自の視点が一切感じられません。特にポリシーへのマッチングアピールが不十分です。自己分析を根本からやり直す必要があります。`;
                     } else {
-                        scoreValue.innerHTML = `71<span style="font-size: 1rem; color: var(--text-main)">点 (ボーダーライン)</span>`;
-                        speedValue.innerText = "B-";
-                        speedLabel.innerText = "論理的具体性";
-                        feedbackText.innerHTML = `<strong>【AI総合文章分析】</strong><br>ある程度の文章量は確保されていますが、安心できる合格ラインには届いていません。志望動機と将来のビジョンのつながりが弱く、説得力に欠けます。<strong>${targetSchool}のポリシー</strong>を形だけ文章に盛り込んだような印象を受けます。なぜ他の学校ではなくこの学校なのか、もっと「あなただけの強み」を軸にしたストーリーにブラッシュアップしてください。`;
+                        // 標準的な回答だが辛口評価
+                        rank1 = "B"; pct1 = 72;
+                        rank2 = "B"; pct2 = 75;
+                        rank3 = "C"; pct3 = 60;
+                        totalRank = "B";
+                        scoreValue.innerHTML = `<span style="color: var(--text-main)">${totalRank}</span>`;
+                        feedbackText.innerHTML = `<strong>【AI総合文章分析】</strong><br>ある程度の文章量は確保されていますが、安心できる合格ライン（A評価）には届いていません。志望動機と将来のビジョンのつながりが弱く、説得力に欠けます。<strong>${targetSchool}のポリシー</strong>を形だけ文章に盛り込んだような印象を受けます。なぜ他の学校ではなくこの学校なのか、もっと「あなただけの強み」を軸にしたストーリーにブラッシュアップしてください。`;
                     }
                 }
+
+                // 段階評価をUIに反映
+                m1Score.innerText = rank1;
+                m2Score.innerText = rank2;
+                m3Score.innerText = rank3;
+
+                // ゲージアニメーション
+                setTimeout(() => {
+                    m1Bar.style.width = `${pct1}%`;
+                    m2Bar.style.width = `${pct2}%`;
+                    m3Bar.style.width = `${pct3}%`;
+                }, 100);
+
                 analysisResult.scrollIntoView({ behavior: 'smooth' });
             }, 3000);
         });
@@ -537,6 +632,8 @@
             headerSchoolName.innerText = "志望校: 未設定"; schoolInput.value = ""; memoField.value = ""; textResponseField.value = ""; textResponseField.disabled = true; charCount.innerText = "0 文字"; aiSpeech.innerText = "「志望校を設定してください。」";
             startInterviewBtn.disabled = true; startInterviewBtn.innerText = "面接を開始する"; avatarDot.classList.remove('active'); recordBtn.disabled = true; recordBtn.style.display = 'inline-flex'; recordBtn.innerText = "録音スタート"; stopBtn.style.display = 'none'; recordingStatus.style.display = 'none';
             audioPlayback.removeAttribute('src'); audioPlayback.load(); disableAnalyzeButton(); analysisResult.style.display = 'none'; loader.style.display = 'none';
+            m1Bar.style.width = `0%`; m2Bar.style.width = `0%`; m3Bar.style.width = `0%`;
+            m1Score.innerText = "-"; m2Score.innerText = "-"; m3Score.innerText = "-";
             currentMode = "voice"; tabVoiceBtn.classList.add('active'); tabTextBtn.classList.remove('active'); sectionVoice.classList.add('active'); sectionText.classList.remove('active');
             schoolModal.style.display = 'flex';
         });
