@@ -87,9 +87,10 @@
             display: none;
             text-align: center;
             background: #fff5f5;
-            padding: 8px;
+            padding: 10px;
             border-radius: 8px;
             border: 1px solid #fed7d7;
+            white-space: pre-line;
         }
 
         /* ヘッダー */
@@ -468,48 +469,64 @@
         let currentMode = "voice";
         let capturedPolicy = "";
 
-        // 【新設】実在する学校かどうかをチェックする関数（簡易的なキーワード辞書判定）
+        // 【新設・強化版】実在する地名・固有名詞と学校種を検証するバリデーション関数
         function isValidSchoolName(name) {
-            if (!name || name.length < 4) return false; // 文字数が極端に短い場合はNG
+            if (!name || name.length < 4) return false;
 
-            // ああああ、テスト、といった明らかに不適切な入力のブロック
-            const blockedPatterns = [/^[あぃいぅうぇえぉおかがきぎくぐけげこごさざしじすずせぜそぞただちぢつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもやゆよらりるれろわをんー ]+$/, /^[a-zA-Z0-9\s]+$/];
-            // ただし、アルファベットやひらがな単体でも「東大」のような特定キーワードがあれば通すために後続の辞書確認を行う
-            
-            // 実在する主要学校種のキーワードリスト（これらが含まれているかを厳格に確認）
-            const validKeywords = [
-                "大学", "短期大学", "短大", "大学院", "高等専門学校", "高専", "専修学校", "専門学校", 
-                "高校", "高等学校", "中等教育学校", "中学校", "中学", "義塾", "学園", "学院"
+            // 同じ文字の連続や、明らかにランダムな文字列の簡易ブロック
+            if (/(.)\1{2,}/.test(name)) return false; 
+
+            // 日本の都道府県名・主要都市名・有名校の固有フレーズのリスト
+            const prefectures = [
+                "北海道", "青森", "岩手", "宮城", "秋田", "山形", "福島", "茨城", "栃木", "群馬", 
+                "埼玉", "千葉", "東京", "神奈川", "新潟", "富山", "石川", "福井", "山梨", "長野", 
+                "岐阜", "静岡", "愛知", "三重", "滋賀", "京都", "大阪", "兵庫", "奈良", "和歌山", 
+                "鳥取", "島根", "岡山", "広島", "山口", "徳島", "香川", "愛媛", "高知", "福岡", 
+                "佐賀", "長崎", "熊本", "大分", "宮崎", "鹿児島", "沖縄",
+                "東大", "京大", "名大", "阪大", "九大", "北大", "東北大", "一橋", "外大", "工大",
+                "早稲田", "慶應", "慶応", "明治", "青山", "立教", "中央", "法政", "同志社", "立命館",
+                "近畿", "関西", "日本", "東海", "駒澤", "専修", "東洋", "国士舘", "拓殖", "帝京"
             ];
-            
-            // キーワードが含まれているかチェック
+
+            // 実在する学校種のキーワード
+            const validKeywords = ["大学", "短期大学", "短大", "大学院", "高専", "専門学校", "高校", "高等学校", "学園", "学院"];
+
+            // 1. 学校種が含まれているか
             const hasKeyword = validKeywords.some(keyword => name.includes(keyword));
-            if (!hasKeyword) return false;
+            // 2. 都道府県名、または主要な略称・固有名詞が含まれているか
+            const hasPrefectureOrFamous = prefectures.some(pref => name.includes(pref));
 
-            // 明らかにランダムな文字列（同じ文字の連続など）を簡易検知
-            if (/(.)\1{3,}/.test(name)) return false; // 「ああああ高校」などの対策
+            // 「地名や有名校の固有フレーズ」＋「学校種」が両方満たされていれば通過
+            if (hasKeyword && hasPrefectureOrFamous) {
+                return true;
+            }
 
-            return true;
+            // 地名リストになくても、漢字3文字以上の固有表現＋学校種であれば一旦通過（例: 創価大学、星槎高校など）
+            if (hasKeyword && name.length >= 5 && /^[\u4E00-\u9FFF]+/.test(name)) {
+                return true;
+            }
+
+            return false;
         }
 
-        // 志望校決定
+        // 志望校決定ボタン
         saveSchoolBtn.addEventListener('click', () => {
             targetSchool = schoolInput.value.trim();
             
-            // 入力バリデーションを実行
             if (targetSchool === "") {
                 modalError.innerText = "⚠️ 学校名を入力してください！";
                 modalError.style.display = "block";
                 return;
             }
             
+            // 強化した実在チェック関数を実行
             if (!isValidSchoolName(targetSchool)) {
-                modalError.innerText = "⚠️ 実在する正しい学校種名を含めて入力してください。\n(例: ○○大学、△△高校、□□専門学校 など)";
+                modalError.innerText = "⚠️ 架空、または正しくない学校名の可能性があります。\n「地名（都道府県）」や「実在する固有名詞」をしっかりと含めた正式な学校種名で入力してください。\n(例: 東京大学、大阪国際専門学校、神奈川県立○○高校 など)";
                 modalError.style.display = "block";
                 return;
             }
 
-            // バリデーションを通過した場合のみ進行
+            // バリデーションに合格した場合のみ次に進む
             modalError.style.display = "none";
             headerSchoolName.innerText = `志望校: ${targetSchool}`;
             generateDynamicQuestions(targetSchool);
