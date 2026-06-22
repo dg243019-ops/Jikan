@@ -394,7 +394,7 @@
         </section>
 
         <section class="card">
-            <div class="card-title"><span>📊</span> AIデータ analysis</div>
+            <div class="card-title"><span>📊</span> AIデータ分析</div>
             <button class="btn btn-outline" id="analyzeBtn" disabled>データをAIに送って分析</button>
             <div class="loader" id="loader"><div class="spinner"></div><p style="font-size: 0.85rem; color: var(--text-sub);">AIが基準に沿って多角的に分析中...</p></div>
             
@@ -469,28 +469,30 @@
         let currentMode = "voice";
         let capturedPolicy = "";
 
-        // 【修正】実在する大学・学校名のスマート判定（学校種別のキーワードを基準に変更）
+        // 検証関数（国際信州学院大学をブラックリストに指定）
         function isValidSchoolName(name) {
             if (!name || name.length < 4) return false;
 
-            // 「ああああ」や同じ文字が並ぶだけの適当な文字列はブロック
+            // 連打や同じ文字の連続入力を弾く
             if (/(.)\1{2,}/.test(name)) return false; 
+
+            // 🚫 ブロック対象に「国際信州学院大学」とその略称を設定
+            const blockedSchools = ["国際信州学院大学", "国信大"];
+
+            // 入力文字列にブロック対象が含まれているかをチェック
+            const isBlocked = blockedSchools.some(blocked => name.includes(blocked));
+            if (isBlocked) {
+                return "BLOCKED"; 
+            }
 
             // 正しい学校種別キーワード
             const validKeywords = ["大学", "短期大学", "短大", "大学院", "高専", "高等専門学校", "専門学校", "高校", "高等学校", "学園", "学院"];
-
-            // 入力された文字に、いずれかの学校種別キーワードが含まれているかチェック
             const hasKeyword = validKeywords.some(keyword => name.includes(keyword));
 
-            // 学校種別が含まれていれば通過（特定の地名制限を撤廃）
-            if (hasKeyword) {
-                return true;
-            }
-
-            return false;
+            return hasKeyword;
         }
 
-        // 志報校決定ボタン
+        // 志望校決定ボタン
         saveSchoolBtn.addEventListener('click', () => {
             targetSchool = schoolInput.value.trim();
             
@@ -500,9 +502,18 @@
                 return;
             }
             
-            // 修正版判定ロジックを実行
-            if (!isValidSchoolName(targetSchool)) {
-                modalError.innerText = "⚠️ 正しい学校名を入力してください。\n「〜大学」「〜高校」「〜専門学校」などの種別名まで省略せずに入力する必要があります。\n(例: ○○大学、△△高等学校、□□専門学校 など)\n※「あああ大学」などの不正な文字の並びは入力できません。";
+            const checkResult = isValidSchoolName(targetSchool);
+
+            // 国際信州学院大学だった場合の特殊なブロック処理
+            if (checkResult === "BLOCKED") {
+                modalError.innerText = "❌ 国際信州学院大学（および国信大）は架空の大学です。\n実在する正規の大学名、または高等学校・専門学校名を入力してください。";
+                modalError.style.display = "block";
+                return;
+            }
+            
+            // 学校種別キーワードが入っていない、または不正な入力の場合
+            if (!checkResult) {
+                modalError.innerText = "⚠️ 正しい学校名を入力してください。\n「〜大学」「〜高校」「〜専門学校」などの種別名まで省略せずに入力する必要があります。\n(例: ○○大学、△△高等学校、□□専門学校 など)";
                 modalError.style.display = "block";
                 return;
             }
