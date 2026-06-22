@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI面接パートナー | SmartPrep</title>
+    <title>AI面接シート | SmartPrep</title>
     <style>
         :root {
             --bg-color: #f8f9fa;
@@ -12,7 +12,6 @@
             --text-sub: #718096;
             --primary: #4f46e5;
             --primary-hover: #4338ca;
-            --accent: #4f46e5;
             --danger: #ef4444;
             --success: #10b981;
         }
@@ -92,6 +91,7 @@
             white-space: pre-line;
         }
 
+        /* ヘッダー */
         header {
             background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80');
             background-size: cover;
@@ -99,68 +99,182 @@
             padding: 40px 16px;
             text-align: center;
             border-bottom: 1px solid #e2e8f0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
 
-        header h1 { font-size: 1.5rem; color: #ffffff; font-weight: 700; }
-        .school-badge { display: inline-block; background: rgba(255, 255, 255, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; color: white; margin-top: 8px; border: 1px solid rgba(255, 255, 255, 0.3); }
+        header h1 {
+            font-size: 1.5rem;
+            color: #ffffff;
+            font-weight: 700;
+        }
 
-        .control-panel { max-width: 480px; margin: 12px auto 0; padding: 0 16px; text-align: right; }
-        .btn-reset { display: inline-flex; align-items: center; gap: 4px; background: #e2e8f0; color: var(--text-main); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: none; cursor: pointer; }
+        .school-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: white;
+            margin-top: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
 
-        main { max-width: 480px; margin: 0 auto; padding: 16px; }
-        .card { background: var(--card-bg); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-        .card-title { font-size: 1rem; margin-bottom: 16px; color: var(--text-main); display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        .control-panel {
+            max-width: 600px;
+            margin: 12px auto 0;
+            padding: 0 16px;
+            text-align: right;
+        }
+        .btn-reset {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #e2e8f0;
+            color: var(--text-main);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
 
-        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 12px 24px; border-radius: 12px; border: none; font-size: 0.95rem; font-weight: 600; cursor: pointer; gap: 8px; }
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 質問ごとのブロック */
+        .question-block {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .question-block:last-child {
+            border-bottom: none;
+            margin-bottom: 10px;
+        }
+
+        .question-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .response-textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .response-textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .char-count {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            gap: 8px;
+        }
         .btn-primary { background-color: var(--primary); color: white; }
-        .btn-danger { background-color: var(--danger); color: white; }
         .btn-success { background-color: var(--success); color: white; }
         .btn-outline { background-color: transparent; border: 2px solid #e2e8f0; color: var(--text-sub); }
+        .btn:disabled { background-color: #cbd5e1; color: #94a3b8; cursor: not-allowed; border: none; }
 
-        /* 質問ごとの解答ブロック（動的に生成される） */
-        .question-block {
-            border-left: 4px solid var(--primary);
-            background: #f8fafc;
-            padding: 16px;
-            border-radius: 0 12px 12px 0;
-            margin-bottom: 20px;
+        /* 分析エリア */
+        .loader { display: none; text-align: center; padding: 20px; }
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e2e8f0;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
         }
-        .q-text { font-weight: bold; font-size: 0.95rem; margin-bottom: 12px; color: var(--text-main); }
-        .ans-mode-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
-        .ans-tab { background: #edf2f7; border: none; padding: 4px 10px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 600; color: var(--text-sub); }
-        .ans-tab.active { background: var(--primary); color: white; }
-        
-        .textarea-ans { width: 100%; height: 100px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; resize: vertical; outline: none; margin-top: 5px; }
-        .textarea-ans:focus { border-color: var(--primary); }
-        
-        .voice-container { margin-top: 5px; }
-        .rec-status { font-size: 0.8rem; color: var(--danger); font-weight: bold; display: none; margin-bottom: 4px; }
-        .rec-btn-group { display: flex; gap: 8px; }
-        .mini-btn { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; }
-        
-        audio { width: 100%; margin-top: 8px; height: 32px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* 分析結果エリア */
-        .analysis-result { margin-top: 16px; padding-top: 16px; border-top: 1px solid #edf2f7; display: none; }
-        .main-score-box { text-align: center; margin-bottom: 24px; padding: 16px; background: #f8fafc; border-radius: 12px; }
-        .main-score-num { font-size: 3rem; font-weight: 900; color: var(--text-main); }
+        .analysis-result {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #edf2f7;
+            display: none;
+        }
+        .main-score-box {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+        .main-score-num { font-size: 3rem; font-weight: 900; }
         .main-score-label { font-size: 0.8rem; color: var(--text-sub); font-weight: bold; }
 
-        .metrics-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
-        .metric-row { background: #ffffff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; }
-        .metric-info { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; }
-        .metric-name { font-weight: 600; color: var(--text-main); }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .metric-row {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 10px;
+        }
+        .metric-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+        .metric-name { font-weight: 600; }
         .metric-score { font-weight: 800; font-size: 1.1rem; color: var(--primary); }
-        .bar-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
-        .bar-fill { height: 100%; background: var(--primary); width: 0%; transition: width 1s ease-out; }
-        .feedback-text { font-size: 0.9rem; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid var(--primary); color: var(--text-main); }
-
-        .loader { display: none; text-align: center; padding: 20px; }
-        .spinner { width: 30px; height: 30px; border: 3px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .bar-container {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 1s ease-out;
+        }
+        .feedback-text { font-size: 0.9rem; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid var(--primary); color: var(--text-main); line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -168,34 +282,36 @@
     <div class="modal-overlay" id="schoolModal">
         <div class="modal-content">
             <h2>🎯 志望校を設定</h2>
-            <p>面接練習を行う学校名を入力してください。<br>(例: ○○大学、△△高校、□□専門学校)</p>
+            <p>面接シートを作成する学校名を入力してください。<br>(例: ○○大学、△△高校)</p>
             <input type="text" class="school-input" id="schoolInput" placeholder="学校名を入力...">
-            <div class="error-message" id="modalError">⚠️ 実在する正しい学校名を入力してください。</div>
-            <button class="btn btn-primary" id="saveSchoolBtn">この学校の面接を始める</button>
+            <div class="error-message" id="modalError">⚠️ 正しい学校名を入力してください。</div>
+            <button class="btn btn-primary" id="saveSchoolBtn">この学校の面接シートを作る</button>
         </div>
     </div>
 
     <header>
-        <h1>SmartPrep AI</h1>
+        <h1>SmartPrep AI 面接回答シート</h1>
         <div class="school-badge" id="headerSchoolName">志望校: 未設定</div>
     </header>
 
     <div class="control-panel">
-        <button class="btn-reset" id="globalResetBtn">🔄 最初からやり直す</button>
+        <button class="btn-reset" id="globalResetBtn">🔄 新しい質問を生成する</button>
     </div>
 
     <main>
-        <section class="card">
-            <div class="card-title"><span>🤖</span> 模擬面接質問・解答一覧</div>
-            <div id="interviewQuestionsContainer">
-                <p style="color: var(--text-sub); text-align: center; font-size: 0.9rem; padding: 20px 0;">志望校を設定すると、ここに5つの解答欄が生成されます。</p>
+        <section class="card" id="sheetCard">
+            <div style="text-align: center; color: var(--text-sub); padding: 20px;">
+                志望校を入力すると、ここに5つの質問と解答欄が生成されます。
             </div>
         </section>
 
         <section class="card">
-            <div class="card-title"><span>📊</span> AIデータ分析</div>
-            <button class="btn btn-outline" id="analyzeBtn" disabled>すべての解答データをAIに送って分析</button>
-            <div class="loader" id="loader"><div class="spinner"></div><p style="font-size: 0.85rem; color: var(--text-sub);">すべての解答から総合的に多角分析中...</p></div>
+            <button class="btn btn-outline" id="analyzeBtn" disabled>すべての回答をAIに送って一括分析</button>
+            
+            <div class="loader" id="loader">
+                <div class="spinner"></div>
+                <p style="font-size: 0.85rem; color: var(--text-sub);">すべての解答欄のテキストから、適合性と論理性を多角的に分析中...</p>
+            </div>
             
             <div class="analysis-result" id="analysisResult">
                 <div class="main-score-box">
@@ -209,11 +325,11 @@
                         <div class="bar-container"><div class="bar-fill" id="m1Bar"></div></div>
                     </div>
                     <div class="metric-row">
-                        <div class="metric-info"><span class="metric-name">② 表現・発話クオリティ</span><span class="metric-score" id="m2Score">-</span></div>
+                        <div class="metric-info"><span class="metric-name">② 語彙力・表現の豊かさ</span><span class="metric-score" id="m2Score">-</span></div>
                         <div class="bar-container"><div class="bar-fill" id="m2Bar"></div></div>
                     </div>
                     <div class="metric-row">
-                        <div class="metric-info"><span class="metric-name">③ 論理的構成度・一貫性</span><span class="metric-score" id="m3Score">-</span></div>
+                        <div class="metric-info"><span class="metric-name">③ 全体の論理的一貫性</span><span class="metric-score" id="m3Score">-</span></div>
                         <div class="bar-container"><div class="bar-fill" id="m3Bar"></div></div>
                     </div>
                 </div>
@@ -230,7 +346,7 @@
         const modalError = document.getElementById('modalError');
         const headerSchoolName = document.getElementById('headerSchoolName');
         const globalResetBtn = document.getElementById('globalResetBtn');
-        const container = document.getElementById('interviewQuestionsContainer');
+        const sheetCard = document.getElementById('sheetCard');
         const analyzeBtn = document.getElementById('analyzeBtn');
         const loader = document.getElementById('loader');
         const analysisResult = document.getElementById('analysisResult');
@@ -245,59 +361,47 @@
         const m3Bar = document.getElementById('m3Bar');
 
         let targetSchool = "";
-        let questions = [];
-        let recActiveIndex = null; 
-        let mediaRecorder = null;
-        let audioChunks = [];
         let capturedPolicy = "";
-        
-        // 解答の状態管理
-        let answersState = Array(5).fill(null).map(() => ({ mode: 'voice', text: '', hasAudio: false }));
 
         function isValidSchoolName(name) {
             if (!name || name.length < 4) return false;
             if (/(.)\1{2,}/.test(name)) return false; 
             if (["国際信州学院大学", "国信大"].some(b => name.includes(b))) return "BLOCKED";
-            return ["大学", "短期大学", "短大", "大学院", "高専", "高等専門学校", "専門学校", "高校", "高等学校", "学園", "学院"].some(k => name.includes(k));
+            return ["大学", "短期大学", "短大", "大学院", "高専", "専門学校", "高校", "高等学校", "学園", "学院"].some(k => name.includes(k));
         }
 
         saveSchoolBtn.addEventListener('click', () => {
             targetSchool = schoolInput.value.trim();
-            if (targetSchool === "") { showModalError("⚠️ 学校名を入力してください！"); return; }
-            const check = isValidSchoolName(targetSchool);
-            if (check === "BLOCKED") { showModalError("❌ 国際信州学院大学は架空の大学です。実在する学校名を入力してください。"); return; }
-            if (!check) { showModalError("⚠️ 「〜大学」などの種別名まで正しく入力してください。"); return; }
+            if (targetSchool === "") { modalError.innerText = "⚠️ 学校名を入力してください！"; modalError.style.display = "block"; return; }
+            
+            const checkResult = isValidSchoolName(targetSchool);
+            if (checkResult === "BLOCKED") { modalError.innerText = "❌ 架空の大学です。実在する学校名を入力してください。"; modalError.style.display = "block"; return; }
+            if (!checkResult) { modalError.innerText = "⚠️ 「〜大学」「〜高校」など種別名まで省略せずに入力してください。"; modalError.style.display = "block"; return; }
 
             modalError.style.display = "none";
             headerSchoolName.innerText = `志望校: ${targetSchool}`;
-            generateDynamicQuestions(targetSchool);
-            renderQuestionBlocks();
+            buildInterviewSheet(targetSchool);
             schoolModal.style.display = 'none';
-            analyzeBtn.disabled = false;
-            analyzeBtn.classList.remove('btn-outline');
-            analyzeBtn.classList.add('btn-success');
         });
 
-        function showModalError(msg) { modalError.innerText = msg; modalError.style.display = "block"; }
-
-        function generateDynamicQuestions(schoolName) {
+        function buildInterviewSheet(schoolName) {
             let policyKeywords = "主体性と探究心、多様な協働";
             if (schoolName.includes("東京大学") || schoolName.includes("東大")) policyKeywords = "高い志を持って未知の領域に挑戦する意志、強い探究心と論理的思考";
             else if (schoolName.includes("早稲田")) policyKeywords = "学問の独立、旺盛な批判精神と、地球社会へ貢献する高い志";
             else if (schoolName.includes("慶應") || schoolName.includes("慶応")) policyKeywords = "独立自尊の精神、自ら問題を発見し解決する能力";
             else if (schoolName.includes("京都大学") || schoolName.includes("京大")) policyKeywords = "対話を根底とした自学自習の精神、自由な学風";
             else policyKeywords = `自立した探究心、地域社会の課題へ関心を持ち、${schoolName}での学びを通じて主体的に解決しようとする熱意`;
-            
+
             capturedPolicy = policyKeywords;
 
-            const questionPool = [
+            const pool = [
                 `「まずはじめに、あなたが${schoolName}を志望する最大の理由を教えてください。」`,
                 `「本学（我が校）のアドミッション・ポリシー【${policyKeywords}】について、あなたのこれまでの経験とどう合致しているか教えてください。」`,
                 `「入学後にあなたが最も深く研究したい、または関心を持っている学問領域について具体的に教えてください。」`,
                 `「あなたがこれまでの学生生活の中で、最も熱中し、力を注いだ活動（学業・部活・課外活動など）は何ですか？」`,
                 `「これまでに自ら課題を見つけ、それを自分なりの方法で解決した具体的なエピソードを教えてください。」`,
                 `「あなたの『長所』と『短所』、それらを象徴する具体的な経験を教えてください。」`,
-                `「あなたがこれまでの人生で直面した『最大の挫折』と、そこからどのように立ち原り、何を学んだかを教えてください。」`,
+                `「あなたがこれまでの人生で直面した『最大の挫折』と、そこからどのように立ち直り、何を学んだかを教えてください。」`,
                 `「最近あなたが最も関心を持った時事問題やニュースは何ですか？また、それに対するあなたの意見も聞かせてください。」`,
                 `「あなたが関心を持っている分野の課題は、将来どのように社会へ還元され、役立つと考えていますか？」`,
                 `「大学での4年間のキャンパスライフを通じて、学業以外（サークル、留学、資格など）で挑戦したい目標は何ですか？」`,
@@ -307,7 +411,7 @@
                 `「周囲の友人や先生から、あなた自身はどのような人だと言われることが多いですか？」`,
                 `「高校生活（またはこれまでの生活）の中で、最も苦手だった教科や事柄と、それにどう向き合ってきたかを教えてください。」`,
                 `「これまでに意見の異なる人と協力しなければならなかった経験はありますか？その際どうコミュニケーションを取りましたか？」`,
-                `「あなたが『自分の価値観や考え方が大きく変わった』と感じる、ターニングポイントになった出来 los を教えてください。」`,
+                `「あなたが『自分の価値観や考え方が大きく変わった』と感じる、ターニングポイントになった出来を開けてください。」`,
                 `「本学（我が校）のオープンキャンパスや説明会に参加した際、最も魅力的だと感じた部分やエピソードを教えてください。」`,
                 `「日頃のストレスや、プレッシャーがかかる場面において、あなたなりの解消法やリフレッシュ方法はありますか？」`,
                 `「AIやデジタル技術の発展が、あなたが将来進みたいと考えている分野にどのような影響を与えると思いますか？」`,
@@ -318,90 +422,58 @@
                 `「大学での講義は高校までと異なり、自由度が高い一方で自己責任も伴います。主体的な学びを進める上で大切にしたいことは何ですか？」`,
                 `「あなたが住んでいる地域、または日本社会全体が抱える現在の課題の中で、特に解決すべきだと思う問題を1つ挙げてください。」`,
                 `「自己PRをお願いします。あなたがこれまで培ったスキルや強みを、自由にアピールしてください。」`,
-                `「将来、予期せぬトラブルやプレッシャーに直面した時、あなたはどう行動しますか？過去のストレス管理の経験も含めて教えてください。」`
+                `「将来、予期せぬトラブルやプレッシャーに直面した時、あなた行動しますか？過去のストレス管理の経験も含めて教えてください。」`
             ];
 
-            const shuffled = [...questionPool].sort(() => 0.5 - Math.random());
-            questions = shuffled.slice(0, 4);
-            // 5問目は固定
-            questions.push(`「最後に、あなたがこの大学（${schoolName}）に絶対に入りたいという熱意を改めて聞かせてください。」`);
-        }
+            // シャッフルして4問抽出
+            const shuffled = [...pool].sort(() => Math.random() - 0.5);
+            const selectedQuestions = shuffled.slice(0, 4);
+            
+            // 5問目を完全固定して合流
+            selectedQuestions.push(`「最後にあなたがこの大学（${schoolName}）に絶対に入りたいという熱意を改めて聞かせてください」`);
 
-        // 5つの解答欄を生成
-        function renderQuestionBlocks() {
-            container.innerHTML = "";
-            questions.forEach((q, index) => {
+            // HTMLの動的組み立て
+            sheetCard.innerHTML = "";
+            selectedQuestions.forEach((q, i) => {
                 const block = document.createElement('div');
                 block.className = 'question-block';
                 block.innerHTML = `
-                    <div class="q-text">第 ${index + 1} 問：${q}</div>
-                    <div class="ans-mode-tabs">
-                        <button class="ans-tab active" onclick="switchMode(${index}, 'voice', this)">🎙️ 音声録音</button>
-                        <button class="ans-tab" onclick="switchMode(${index}, 'text', this)">✍️ テキスト入力</button>
-                    </div>
-                    <div id="voiceSection-${index}" class="voice-container">
-                        <div class="rec-status" id="recStatus-${index}">● 録音中...</div>
-                        <div class="rec-btn-group">
-                            <button class="mini-btn btn-outline" id="startRecBtn-${index}" onclick="startRecording(${index})">録音開始</button>
-                            <button class="mini-btn btn-danger" id="stopRecBtn-${index}" style="display:none;" onclick="stopRecording(${index})">ストップ</button>
-                        </div>
-                        <audio id="audio-${index}" controls></audio>
-                    </div>
-                    <div id="textSection-${index}" style="display:none;">
-                        <textarea class="textarea-ans" placeholder="回答を入力してください..." oninput="updateTextAnswer(${index}, this)"></textarea>
-                    </div>
+                    <div class="question-title">質問 ${i + 1}: ${q.replace(/^「/, "").replace(/」$/, "")}</div>
+                    <textarea class="response-textarea" data-index="${i}" placeholder="ここに回答を入力（目安: 200〜400文字）..."></textarea>
+                    <div class="char-count" id="charCount-${i}">0 文字</div>
                 `;
-                container.appendChild(block);
+                sheetCard.appendChild(block);
+            });
+
+            // 文字数カウントおよび分析ボタンのアクティブ化イベント紐付け
+            const textareas = sheetCard.querySelectorAll('.response-textarea');
+            textareas.forEach(textarea => {
+                textarea.addEventListener('input', (e) => {
+                    const idx = e.target.getAttribute('data-index');
+                    document.getElementById(`charCount-${idx}`).innerText = `${e.target.value.length} 文字`;
+                    checkAllInputs();
+                });
             });
         }
 
-        window.switchMode = function(index, mode, btnEl) {
-            answersState[index].mode = mode;
-            const parent = btnEl.parentElement;
-            Array.from(parent.children).forEach(b => b.classList.remove('active'));
-            btnEl.classList.add('active');
-
-            document.getElementById(`voiceSection-${index}`).style.display = mode === 'voice' ? 'block' : 'none';
-            document.getElementById(`textSection-${index}`).style.display = mode === 'text' ? 'block' : 'none';
-        };
-
-        window.updateTextAnswer = function(index, textarea) {
-            answersState[index].text = textarea.value;
-        };
-
-        window.startRecording = async function(index) {
-            if (recActiveIndex !== null) { alert("他の質問の録音を停止してください。"); return; }
-            audioChunks = [];
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(audioChunks, { type: 'audio/wav' });
-                    document.getElementById(`audio-${index}`).src = URL.createObjectURL(blob);
-                    answersState[index].hasAudio = true;
-                };
-                mediaRecorder.start();
-                recActiveIndex = index;
-                document.getElementById(`recStatus-${index}`).style.display = 'block';
-                document.getElementById(`startRecBtn-${index}`).style.display = 'none';
-                document.getElementById(`stopRecBtn-${index}`).style.display = 'inline-block';
-            } catch (err) { alert("マイクの利用が許可されませんでした。"); }
-        };
-
-        window.stopRecording = function(index) {
-            if (mediaRecorder && recActiveIndex === index) {
-                mediaRecorder.stop();
-                mediaRecorder.stream.getTracks().forEach(t => t.stop());
-                recActiveIndex = null;
-                document.getElementById(`recStatus-${index}`).style.display = 'none';
-                document.getElementById(`startRecBtn-${index}`).style.display = 'inline-block';
-                document.getElementById(`stopRecBtn-${index}`).style.display = 'none';
-                document.getElementById(`startRecBtn-${index}`).innerText = "もう一度録音する";
+        // 全欄に何かしら入力されているかチェック
+        function checkAllInputs() {
+            const textareas = Array.from(sheetCard.querySelectorAll('.response-textarea'));
+            if(textareas.length === 0) { analyzeBtn.disabled = true; return; }
+            
+            const isAllFilled = textareas.every(ta => ta.value.trim().length > 0);
+            if (isAllFilled) {
+                analyzeBtn.disabled = false;
+                analyzeBtn.classList.remove('btn-outline');
+                analyzeBtn.classList.add('btn-success');
+            } else {
+                analyzeBtn.disabled = true;
+                analyzeBtn.classList.remove('btn-success');
+                analyzeBtn.classList.add('btn-outline');
             }
-        };
+        }
 
-        // 全5問の解答をAIで一括分析
+        // AIデータ分析
         analyzeBtn.addEventListener('click', () => {
             loader.style.display = 'block';
             analysisResult.style.display = 'none';
@@ -412,35 +484,73 @@
                 analysisResult.style.display = 'block';
                 analyzeBtn.disabled = false;
 
-                // 簡易シミュレーションスコア
-                let p1 = Math.floor(Math.random() * 25) + 65; 
-                let p2 = Math.floor(Math.random() * 25) + 65;
-                let p3 = Math.floor(Math.random() * 25) + 60;
-                let avg = Math.round((p1 + p2 + p3) / 3);
+                const textareas = Array.from(sheetCard.querySelectorAll('.response-textarea'));
+                const totalChars = textareas.reduce((sum, ta) => sum + ta.value.length, 0);
 
-                let rank = "B";
-                if (avg >= 85) rank = "A";
-                else if (avg < 65) rank = "C";
+                let rank1, rank2, rank3, totalRank, feedback;
+                let pct1, pct2, pct3;
 
-                scoreValue.innerHTML = `<span>${rank}</span>`;
-                m1Score.innerText = `${p1}点`;
-                m2Score.innerText = `${p2}点`;
-                m3Score.innerText = `${p3}点`;
+                if (totalChars < 500) {
+                    // 全体の文字数が少ない場合（平均1つあたり100字未満）
+                    rank1 = "D"; pct1 = 38;
+                    rank2 = "D"; pct2 = 42;
+                    rank3 = "D"; pct3 = 35;
+                    totalRank = "D";
+                    scoreValue.innerHTML = `<span style="color: var(--danger)">${totalRank}</span>`;
+                    feedback = `<strong>【AI一括シート分析結果】</strong><br>全体的に記述量が大幅に不足しています。各質問に対する回答が2〜3行程度で終わってしまっており、あなたの熱意やディテールが面接官に伝わりません。特に5問目の「絶対に入りたいという熱意」に対して、具体的なエピソードに基づいた独自の言葉が欠けています。まずは各解答欄とも200文字以上（全体で1000文字以上）を目安に、具体例を盛り込んで書き直してください。`;
+                } else if (totalChars < 1200) {
+                    // 普通レベル
+                    rank1 = "B"; pct1 = 70;
+                    rank2 = "C"; pct2 = 58;
+                    rank3 = "B"; pct3 = 68;
+                    totalRank = "C+";
+                    scoreValue.innerHTML = `<span style="color: var(--text-main)">${totalRank}</span>`;
+                    feedback = `<strong>【AI一括シート分析結果】</strong><br>最低限の構成はできていますが、合格ラインに届くにはもう一歩改善が必要です。1問ずつの繋がり（論理の一貫性）は意識されていますが、使われている語彙が一般的（無難）すぎて、他の受験生の中に埋もれてしまうリスクがあります。<strong>${targetSchool}のポリシー（${capturedPolicy}）</strong>をただキーワードとしてなぞるだけでなく、「だから自分はこの学びが必要なんだ」というエピソードの説得力を補強してください。`;
+                } else {
+                    // 高評価
+                    rank1 = "A"; pct1 = 88;
+                    rank2 = "A"; pct2 = 85;
+                    rank3 = "A"; pct3 = 90;
+                    totalRank = "A";
+                    scoreValue.innerHTML = `<span style="color: var(--success)">${totalRank}</span>`;
+                    feedback = `<strong>【AI一括シート分析結果】</strong><br>素晴らしい完成度です！すべての質問に対して十分な情報量が記述されており、自己分析と志望校研究が深く行われていることが伝わります。前半の挫折や強みの話が、最後の5問目である「${targetSchool}への絶対的な熱意」へと綺麗に伏線回収されており、論理的一貫性が極めて高いです。このシートの内容をベースに、実際の口頭面接でもハキハキと話せるよう声出しの練習に移りましょう！`;
+                }
 
-                m1Bar.style.width = `${p1}%`;
-                m2Bar.style.width = `${p2}%`;
-                m3Bar.style.width = `${p3}%`;
+                m1Score.innerText = rank1;
+                m2Score.innerText = rank2;
+                m3Score.innerText = rank3;
 
-                feedbackText.innerHTML = `<strong>【AI総合5問一括フィードバック】</strong><br>全5問への解答データを総合分析しました。全体的に質問の意図を正確に捉えて回答できています。特に、最後の5問目の熱意に関する問いに対しては、独自のビジョンが垣間見え高評価です。一方で、中盤の質問において、<strong>${targetSchool}のアドミッション・ポリシー（${capturedPolicy}）</strong>との結びつきをもう一歩具体的にアピールすると、さらに確実なA判定を狙えます。`;
-                
+                setTimeout(() => {
+                    m1Bar.style.width = `${pct1}%`;
+                    m2Bar.style.width = `${pct2}%`;
+                    m3Bar.style.width = `${pct3}%`;
+                }, 100);
+
                 analysisResult.scrollIntoView({ behavior: 'smooth' });
-            }, 3000);
+            }, 2500);
         });
 
+        // 全リセット
         globalResetBtn.addEventListener('click', () => {
-            if (!confirm("すべてリセットして、最初の志望校設定に戻ってもよろしいですか？")) return;
-            location.reload();
+            if (!confirm("現在の入力内容をすべて消去し、別の新しい質問をランダムに引き直しますか？")) return;
+            targetSchool = "";
+            headerSchoolName.innerText = "志望校: 未設定";
+            schoolInput.value = "";
+            sheetCard.innerHTML = `<div style="text-align: center; color: var(--text-sub); padding: 20px;">志望校を入力すると、ここに5つの質問と解答欄が生成されます。</div>`;
+            disableAnalyzeButton();
+            analysisResult.style.display = 'none';
+            loader.style.display = 'none';
+            m1Bar.style.width = `0%`; m2Bar.style.width = `0%`; m3Bar.style.width = `0%`;
+            m1Score.innerText = "-"; m2Score.innerText = "-"; m3Score.innerText = "-";
+            modalError.style.display = "none";
+            schoolModal.style.display = 'flex';
         });
+
+        function disableAnalyzeButton() {
+            analyzeBtn.disabled = true;
+            analyzeBtn.classList.remove('btn-success');
+            analyzeBtn.classList.add('btn-outline');
+        }
     </script>
 </body>
 </html>
