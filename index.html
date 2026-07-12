@@ -117,7 +117,7 @@
         .question-block:last-child { border-bottom: none; margin-bottom: 10px; }
         .question-title { font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 12px; }
 
-        /* 回答ツール（入力欄と録音機能） */
+        /* 回答ツール */
         .response-textarea {
             width: 100%; height: 100px; padding: 12px;
             border: 2px solid #e2e8f0; border-radius: 12px;
@@ -127,7 +127,7 @@
         .response-textarea:focus { border-color: var(--primary); }
         .char-count { font-size: 0.75rem; color: var(--text-sub); text-align: right; margin-top: 4px; margin-bottom: 12px; }
 
-        /* 個別録音エリアのスタイル */
+        /* 個別録音エリア */
         .voice-tool-box {
             background: #f8fafc; border: 1px solid #e2e8f0;
             padding: 12px; border-radius: 12px; display: flex;
@@ -152,7 +152,7 @@
         .btn-large { width: 100%; padding: 14px 24px; font-size: 1rem; border-radius: 12px; }
         .btn:disabled { background-color: #cbd5e1; color: #94a3b8; cursor: not-allowed; border: none; }
 
-        /* AI一括データ分析 */
+        /* AI分析 */
         .loader { display: none; text-align: center; padding: 20px; }
         .spinner {
             width: 30px; height: 30px; border: 3px solid #e2e8f0;
@@ -262,7 +262,6 @@
         let targetSchool = "";
         let capturedPolicy = "";
         
-        // 質問ごとの録音状態管理用
         let activeMediaRecorder = null;
         let activeStream = null;
         let audioChunks = [];
@@ -317,9 +316,9 @@
                 `「これまでに意見の異なる人と協力しなければならなかった経験はありますか？その際どうコミュニケーションを取りましたか？」`,
                 `「あなたが『自分の価値観や考え方が大きく変わった』と感じる、ターニングポイントになった出来事を教えてください。」`,
                 `「本学（我が校）のオープンキャンパスや説明会に参加した際、最も魅力的だと感じた部分やエピソードを教えてください。」`,
-                `「日頃のストレスや、プレッシャーがかかる場面において、あなたなりの解消法やリフレッシュ方法はありますか？」`,
+                `「日頃のストレスや、プレッゲストがかかる場面において、あなたなりの解消法やリフレッシュ方法はありますか？」`,
                 `「AIやデジタル技術の発展が、あなたが将来進みたいと考えている分野にどのような影響を与えると思いますか？」`,
-                ``あなたの今、最も大切にしている『座右の銘』や『信念』があれば教えてください。」`,
+                `「あなたの今、最も大切にしている『座右の銘』や『信念』があれば教えてください。」`,
                 `「高校の先生や両親以外で、あなたの進路決定に最も大きな影響を与えた出来事やアドバイスはありますか？」`,
                 `「本学（我が校）での学びにおいて、他大学（他校）にはない、本学独自の強みはどこにあると考えていますか？」`,
                 `「あなたがこれまでに読んだ本や映画、論文などの中で、最も感銘を受け、自分の思考に影響を与えたものを1つ教えてください。」`,
@@ -355,12 +354,10 @@
                 sheetCard.appendChild(block);
             });
 
-            // イベントの有効化
             setupSheetEvents();
         }
 
         function setupSheetEvents() {
-            // 文字入力の監視
             const textareas = sheetCard.querySelectorAll('.response-textarea');
             textareas.forEach(textarea => {
                 textarea.addEventListener('input', (e) => {
@@ -370,7 +367,6 @@
                 });
             });
 
-            // 録音スタートボタン群のイベント
             sheetCard.querySelectorAll('.rec-start-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const idx = e.target.getAttribute('data-index');
@@ -393,7 +389,6 @@
 
                         activeMediaRecorder.start();
                         
-                        // UI切り替え
                         e.target.style.display = 'none';
                         sheetCard.querySelector(`.rec-stop-btn[data-index="${idx}"]`).style.display = 'inline-flex';
                         document.getElementById(`recStatus-${idx}`).style.display = 'inline-block';
@@ -404,7 +399,6 @@
                 });
             });
 
-            // 録音ストップボタン群のイベント
             sheetCard.querySelectorAll('.rec-stop-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const idx = e.target.getAttribute('data-index');
@@ -416,7 +410,6 @@
                         activeStream.getTracks().forEach(track => track.stop());
                     }
 
-                    // UI切り替え
                     e.target.style.display = 'none';
                     sheetCard.querySelector(`.rec-start-btn[data-index="${idx}"]`).style.display = 'inline-flex';
                     sheetCard.querySelector(`.rec-start-btn[data-index="${idx}"]`).innerText = "🔄 もう一度録音する";
@@ -425,12 +418,10 @@
             });
         }
 
-        // 入力状況を確認して分析ボタンを有効化する
         function checkFormProgress() {
             const textareas = Array.from(sheetCard.querySelectorAll('.response-textarea'));
             if (textareas.length === 0) return;
 
-            // テキストがすべて埋まっているか、または音声が1つでも録音されているか
             const hasText = textareas.every(ta => ta.value.trim().length > 0);
             
             if (hasText) {
@@ -444,7 +435,6 @@
             }
         }
 
-        // AI一括データ分析のシミュレーション
         analyzeBtn.addEventListener('click', () => {
             loader.style.display = 'block';
             analysisResult.style.display = 'none';
@@ -498,7 +488,6 @@
             }, 2500);
         });
 
-        // リセット
         globalResetBtn.addEventListener('click', () => {
             if (!confirm("現在の入力内容と録音データをすべて消去し、別の新しい質問をランダムに引き直しますか？")) return;
             targetSchool = "";
