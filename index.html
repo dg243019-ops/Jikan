@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI面接シート | SmartPrep</title>
+    <title>AI面接マルチシート | SmartPrep</title>
     <style>
         :root {
             --bg-color: #f8f9fa;
@@ -33,10 +33,7 @@
         /* 志望校入力用のポップアップ */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(4px);
             display: flex;
@@ -53,16 +50,6 @@
             text-align: center;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
-        .modal-content h2 {
-            font-size: 1.3rem;
-            margin-bottom: 12px;
-            color: var(--primary);
-        }
-        .modal-content p {
-            font-size: 0.85rem;
-            color: var(--text-sub);
-            margin-bottom: 16px;
-        }
         .school-input {
             width: 100%;
             padding: 12px;
@@ -73,9 +60,7 @@
             outline: none;
             text-align: center;
         }
-        .school-input:focus {
-            border-color: var(--primary);
-        }
+        .school-input:focus { border-color: var(--primary); }
         
         .error-message {
             color: var(--danger);
@@ -100,13 +85,7 @@
             text-align: center;
             border-bottom: 1px solid #e2e8f0;
         }
-
-        header h1 {
-            font-size: 1.5rem;
-            color: #ffffff;
-            font-weight: 700;
-        }
-
+        header h1 { font-size: 1.5rem; color: #ffffff; font-weight: 700; }
         .school-badge {
             display: inline-block;
             background: rgba(255, 255, 255, 0.2);
@@ -118,163 +97,83 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        .control-panel {
-            max-width: 600px;
-            margin: 12px auto 0;
-            padding: 0 16px;
-            text-align: right;
-        }
+        .control-panel { max-width: 600px; margin: 12px auto 0; padding: 0 16px; text-align: right; }
         .btn-reset {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: #e2e8f0;
-            color: var(--text-main);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
+            display: inline-flex; align-items: center; gap: 4px;
+            background: #e2e8f0; color: var(--text-main);
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 600; border: none; cursor: pointer;
         }
 
-        main {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 16px;
-        }
-
+        main { max-width: 600px; margin: 0 auto; padding: 16px; }
         .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: var(--card-bg); border-radius: 16px;
+            padding: 20px; margin-bottom: 20px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
-        /* 質問ごとのブロック */
-        .question-block {
-            margin-bottom: 24px;
-            padding-bottom: 20px;
-            border-bottom: 1px dashed #e2e8f0;
-        }
-        .question-block:last-child {
-            border-bottom: none;
-            margin-bottom: 10px;
-        }
+        /* 質問ブロック */
+        .question-block { margin-bottom: 30px; padding-bottom: 24px; border-bottom: 1px dashed #e2e8f0; }
+        .question-block:last-child { border-bottom: none; margin-bottom: 10px; }
+        .question-title { font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 12px; }
 
-        .question-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 10px;
-            line-height: 1.4;
-        }
-
+        /* 回答ツール（入力欄と録音機能） */
         .response-textarea {
-            width: 100%;
-            height: 120px;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            color: var(--text-main);
-            resize: vertical;
-            outline: none;
-            transition: border-color 0.2s;
+            width: 100%; height: 100px; padding: 12px;
+            border: 2px solid #e2e8f0; border-radius: 12px;
+            font-size: 0.95rem; color: var(--text-main);
+            resize: vertical; outline: none; transition: border-color 0.2s;
         }
-        .response-textarea:focus {
-            border-color: var(--primary);
-        }
+        .response-textarea:focus { border-color: var(--primary); }
+        .char-count { font-size: 0.75rem; color: var(--text-sub); text-align: right; margin-top: 4px; margin-bottom: 12px; }
 
-        .char-count {
-            font-size: 0.75rem;
-            color: var(--text-sub);
-            text-align: right;
-            margin-top: 4px;
+        /* 個別録音エリアのスタイル */
+        .voice-tool-box {
+            background: #f8fafc; border: 1px solid #e2e8f0;
+            padding: 12px; border-radius: 12px; display: flex;
+            flex-direction: column; gap: 8px; margin-top: 8px;
         }
+        .voice-controls { display: flex; gap: 8px; align-items: center; }
+        .rec-status { font-size: 0.8rem; color: var(--danger); font-weight: bold; display: none; }
+        
+        audio { width: 100%; height: 32px; border-radius: 6px; }
 
+        /* ボタン群 */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: 14px 24px;
-            border-radius: 12px;
-            border: none;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            gap: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 10px 16px; border-radius: 10px; border: none;
+            font-size: 0.9rem; font-weight: 600; cursor: pointer; gap: 6px;
         }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; }
         .btn-primary { background-color: var(--primary); color: white; }
+        .btn-danger { background-color: var(--danger); color: white; }
         .btn-success { background-color: var(--success); color: white; }
         .btn-outline { background-color: transparent; border: 2px solid #e2e8f0; color: var(--text-sub); }
+        .btn-large { width: 100%; padding: 14px 24px; font-size: 1rem; border-radius: 12px; }
         .btn:disabled { background-color: #cbd5e1; color: #94a3b8; cursor: not-allowed; border: none; }
 
-        /* 分析エリア */
+        /* AI一括データ分析 */
         .loader { display: none; text-align: center; padding: 20px; }
         .spinner {
-            width: 30px;
-            height: 30px;
-            border: 3px solid #e2e8f0;
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
+            width: 30px; height: 30px; border: 3px solid #e2e8f0;
+            border-top-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto 10px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .analysis-result {
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid #edf2f7;
-            display: none;
-        }
-        .main-score-box {
-            text-align: center;
-            margin-bottom: 24px;
-            padding: 16px;
-            background: #f8fafc;
-            border-radius: 12px;
-        }
+        .analysis-result { margin-top: 16px; padding-top: 16px; border-top: 1px solid #edf2f7; display: none; }
+        .main-score-box { text-align: center; margin-bottom: 24px; padding: 16px; background: #f8fafc; border-radius: 12px; }
         .main-score-num { font-size: 3rem; font-weight: 900; }
         .main-score-label { font-size: 0.8rem; color: var(--text-sub); font-weight: bold; }
 
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .metric-row {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            padding: 12px;
-            border-radius: 10px;
-        }
-        .metric-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            margin-bottom: 6px;
-        }
+        .metrics-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
+        .metric-row { background: #ffffff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; }
+        .metric-info { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; }
         .metric-name { font-weight: 600; }
         .metric-score { font-weight: 800; font-size: 1.1rem; color: var(--primary); }
-        .bar-container {
-            width: 100%;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .bar-fill {
-            height: 100%;
-            background: var(--primary);
-            width: 0%;
-            transition: width 1s ease-out;
-        }
-        .feedback-text { font-size: 0.9rem; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid var(--primary); color: var(--text-main); line-height: 1.5; }
+        .bar-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--primary); width: 0%; transition: width 1s ease-out; }
+        .feedback-text { font-size: 0.9rem; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid var(--primary); color: var(--text-main); }
     </style>
 </head>
 <body>
@@ -285,12 +184,12 @@
             <p>面接シートを作成する学校名を入力してください。<br>(例: ○○大学、△△高校)</p>
             <input type="text" class="school-input" id="schoolInput" placeholder="学校名を入力...">
             <div class="error-message" id="modalError">⚠️ 正しい学校名を入力してください。</div>
-            <button class="btn btn-primary" id="saveSchoolBtn">この学校の面接シートを作る</button>
+            <button class="btn btn-primary btn-large" id="saveSchoolBtn">この学校の面接シートを作る</button>
         </div>
     </div>
 
     <header>
-        <h1>SmartPrep AI 面接回答シート</h1>
+        <h1>SmartPrep AI 面接回答シート (音声対応版)</h1>
         <div class="school-badge" id="headerSchoolName">志望校: 未設定</div>
     </header>
 
@@ -301,16 +200,16 @@
     <main>
         <section class="card" id="sheetCard">
             <div style="text-align: center; color: var(--text-sub); padding: 20px;">
-                志望校を入力すると、ここに5つの質問と解答欄が生成されます。
+                志望校を入力すると、ここに質問、テキスト入力欄、音声録音機能が生成されます。
             </div>
         </section>
 
         <section class="card">
-            <button class="btn btn-outline" id="analyzeBtn" disabled>すべての回答をAIに送って一括分析</button>
+            <button class="btn btn-outline btn-large" id="analyzeBtn" disabled>すべての回答をAIに送って一括分析</button>
             
             <div class="loader" id="loader">
                 <div class="spinner"></div>
-                <p style="font-size: 0.85rem; color: var(--text-sub);">すべての解答欄のテキストから、適合性と論理性を多角的に分析中...</p>
+                <p style="font-size: 0.85rem; color: var(--text-sub);">テキストと音声記録の整合性を多角的に分析中...</p>
             </div>
             
             <div class="analysis-result" id="analysisResult">
@@ -325,7 +224,7 @@
                         <div class="bar-container"><div class="bar-fill" id="m1Bar"></div></div>
                     </div>
                     <div class="metric-row">
-                        <div class="metric-info"><span class="metric-name">② 語彙力・表現の豊かさ</span><span class="metric-score" id="m2Score">-</span></div>
+                        <div class="metric-info"><span class="metric-name">② 語彙・表現・発話の豊かさ</span><span class="metric-score" id="m2Score">-</span></div>
                         <div class="bar-container"><div class="bar-fill" id="m2Bar"></div></div>
                     </div>
                     <div class="metric-row">
@@ -362,6 +261,11 @@
 
         let targetSchool = "";
         let capturedPolicy = "";
+        
+        // 質問ごとの録音状態管理用
+        let activeMediaRecorder = null;
+        let activeStream = null;
+        let audioChunks = [];
 
         function isValidSchoolName(name) {
             if (!name || name.length < 4) return false;
@@ -411,58 +315,125 @@
                 `「周囲の友人や先生から、あなた自身はどのような人だと言われることが多いですか？」`,
                 `「高校生活（またはこれまでの生活）の中で、最も苦手だった教科や事柄と、それにどう向き合ってきたかを教えてください。」`,
                 `「これまでに意見の異なる人と協力しなければならなかった経験はありますか？その際どうコミュニケーションを取りましたか？」`,
-                `「あなたが『自分の価値観や考え方が大きく変わった』と感じる、ターニングポイントになった出来を開けてください。」`,
+                `「あなたが『自分の価値観や考え方が大きく変わった』と感じる、ターニングポイントになった出来事を教えてください。」`,
                 `「本学（我が校）のオープンキャンパスや説明会に参加した際、最も魅力的だと感じた部分やエピソードを教えてください。」`,
                 `「日頃のストレスや、プレッシャーがかかる場面において、あなたなりの解消法やリフレッシュ方法はありますか？」`,
                 `「AIやデジタル技術の発展が、あなたが将来進みたいと考えている分野にどのような影響を与えると思いますか？」`,
-                `「あなたが今、最も大切にしている『座右の銘』や『信念』があれば教えてください。」`,
+                ``あなたの今、最も大切にしている『座右の銘』や『信念』があれば教えてください。」`,
                 `「高校の先生や両親以外で、あなたの進路決定に最も大きな影響を与えた出来事やアドバイスはありますか？」`,
                 `「本学（我が校）での学びにおいて、他大学（他校）にはない、本学独自の強みはどこにあると考えていますか？」`,
                 `「あなたがこれまでに読んだ本や映画、論文などの中で、最も感銘を受け、自分の思考に影響を与えたものを1つ教えてください。」`,
                 `「大学での講義は高校までと異なり、自由度が高い一方で自己責任も伴います。主体的な学びを進める上で大切にしたいことは何ですか？」`,
                 `「あなたが住んでいる地域、または日本社会全体が抱える現在の課題の中で、特に解決すべきだと思う問題を1つ挙げてください。」`,
                 `「自己PRをお願いします。あなたがこれまで培ったスキルや強みを、自由にアピールしてください。」`,
-                `「将来、予期せぬトラブルやプレッシャーに直面した時、あなた行動しますか？過去のストレス管理の経験も含めて教えてください。」`
+                `「将来、予期せぬトラブルやプレッシャーに直面した時、あなたはどう行動しますか？過去のストレス管理の経験も含めて教えてください。」`
             ];
 
-            // シャッフルして4問抽出
             const shuffled = [...pool].sort(() => Math.random() - 0.5);
             const selectedQuestions = shuffled.slice(0, 4);
-            
-            // 5問目を完全固定して合流
             selectedQuestions.push(`「最後にあなたがこの大学（${schoolName}）に絶対に入りたいという熱意を改めて聞かせてください」`);
 
-            // HTMLの動的組み立て
             sheetCard.innerHTML = "";
             selectedQuestions.forEach((q, i) => {
                 const block = document.createElement('div');
                 block.className = 'question-block';
                 block.innerHTML = `
                     <div class="question-title">質問 ${i + 1}: ${q.replace(/^「/, "").replace(/」$/, "")}</div>
-                    <textarea class="response-textarea" data-index="${i}" placeholder="ここに回答を入力（目安: 200〜400文字）..."></textarea>
+                    <textarea class="response-textarea" data-index="${i}" placeholder="ここに文字で回答を入力（目安: 200文字以上）..."></textarea>
                     <div class="char-count" id="charCount-${i}">0 文字</div>
+                    
+                    <div class="voice-tool-box">
+                        <p style="font-size: 0.8rem; font-weight: bold; color: var(--text-sub); margin-bottom: 4px;">🎙️ 声に出して面接の練習をする</p>
+                        <div class="voice-controls">
+                            <button class="btn btn-sm btn-outline rec-start-btn" data-index="${i}">🔴 録音スタート</button>
+                            <button class="btn btn-sm btn-danger rec-stop-btn" data-index="${i}" style="display:none;">■ ストップ</button>
+                            <span class="rec-status" id="recStatus-${i}">● 録音中...</span>
+                        </div>
+                        <audio id="audioPlayback-${i}" controls></audio>
+                    </div>
                 `;
                 sheetCard.appendChild(block);
             });
 
-            // 文字数カウントおよび分析ボタンのアクティブ化イベント紐付け
+            // イベントの有効化
+            setupSheetEvents();
+        }
+
+        function setupSheetEvents() {
+            // 文字入力の監視
             const textareas = sheetCard.querySelectorAll('.response-textarea');
             textareas.forEach(textarea => {
                 textarea.addEventListener('input', (e) => {
                     const idx = e.target.getAttribute('data-index');
                     document.getElementById(`charCount-${idx}`).innerText = `${e.target.value.length} 文字`;
-                    checkAllInputs();
+                    checkFormProgress();
+                });
+            });
+
+            // 録音スタートボタン群のイベント
+            sheetCard.querySelectorAll('.rec-start-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const idx = e.target.getAttribute('data-index');
+                    audioChunks = [];
+                    
+                    try {
+                        activeStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        activeMediaRecorder = new MediaRecorder(activeStream);
+                        
+                        activeMediaRecorder.ondataavailable = event => {
+                            if (event.data.size > 0) audioChunks.push(event.data);
+                        };
+                        
+                        activeMediaRecorder.onstop = () => {
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                            const audioUrl = URL.createObjectURL(audioBlob);
+                            document.getElementById(`audioPlayback-${idx}`).src = audioUrl;
+                            checkFormProgress();
+                        };
+
+                        activeMediaRecorder.start();
+                        
+                        // UI切り替え
+                        e.target.style.display = 'none';
+                        sheetCard.querySelector(`.rec-stop-btn[data-index="${idx}"]`).style.display = 'inline-flex';
+                        document.getElementById(`recStatus-${idx}`).style.display = 'inline-block';
+                        
+                    } catch (err) {
+                        alert('マイクの使用が許可されていないか、利用できません。ブラウザの設定を確認してください。');
+                    }
+                });
+            });
+
+            // 録音ストップボタン群のイベント
+            sheetCard.querySelectorAll('.rec-stop-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = e.target.getAttribute('data-index');
+                    
+                    if (activeMediaRecorder && activeMediaRecorder.state !== 'inactive') {
+                        activeMediaRecorder.stop();
+                    }
+                    if (activeStream) {
+                        activeStream.getTracks().forEach(track => track.stop());
+                    }
+
+                    // UI切り替え
+                    e.target.style.display = 'none';
+                    sheetCard.querySelector(`.rec-start-btn[data-index="${idx}"]`).style.display = 'inline-flex';
+                    sheetCard.querySelector(`.rec-start-btn[data-index="${idx}"]`).innerText = "🔄 もう一度録音する";
+                    document.getElementById(`recStatus-${idx}`).style.display = 'none';
                 });
             });
         }
 
-        // 全欄に何かしら入力されているかチェック
-        function checkAllInputs() {
+        // 入力状況を確認して分析ボタンを有効化する
+        function checkFormProgress() {
             const textareas = Array.from(sheetCard.querySelectorAll('.response-textarea'));
-            if(textareas.length === 0) { analyzeBtn.disabled = true; return; }
+            if (textareas.length === 0) return;
+
+            // テキストがすべて埋まっているか、または音声が1つでも録音されているか
+            const hasText = textareas.every(ta => ta.value.trim().length > 0);
             
-            const isAllFilled = textareas.every(ta => ta.value.trim().length > 0);
-            if (isAllFilled) {
+            if (hasText) {
                 analyzeBtn.disabled = false;
                 analyzeBtn.classList.remove('btn-outline');
                 analyzeBtn.classList.add('btn-success');
@@ -473,7 +444,7 @@
             }
         }
 
-        // AIデータ分析
+        // AI一括データ分析のシミュレーション
         analyzeBtn.addEventListener('click', () => {
             loader.style.display = 'block';
             analysisResult.style.display = 'none';
@@ -491,29 +462,26 @@
                 let pct1, pct2, pct3;
 
                 if (totalChars < 500) {
-                    // 全体の文字数が少ない場合（平均1つあたり100字未満）
-                    rank1 = "D"; pct1 = 38;
-                    rank2 = "D"; pct2 = 42;
-                    rank3 = "D"; pct3 = 35;
-                    totalRank = "D";
+                    rank1 = "C"; pct1 = 52;
+                    rank2 = "C"; pct2 = 55;
+                    rank3 = "D"; pct3 = 45;
+                    totalRank = "C-";
                     scoreValue.innerHTML = `<span style="color: var(--danger)">${totalRank}</span>`;
-                    feedback = `<strong>【AI一括シート分析結果】</strong><br>全体的に記述量が大幅に不足しています。各質問に対する回答が2〜3行程度で終わってしまっており、あなたの熱意やディテールが面接官に伝わりません。特に5問目の「絶対に入りたいという熱意」に対して、具体的なエピソードに基づいた独自の言葉が欠けています。まずは各解答欄とも200文字以上（全体で1000文字以上）を目安に、具体例を盛り込んで書き直してください。`;
+                    feedback = `<strong>【AI一括シート分析結果】</strong><br>テキスト回答のボリュームが少なめです。面接官により深い印象を残すため、エピソードのディテールを強めてみましょう。ただし、録音データを利用して声での表現練習を並行して行っている点は非常に素晴らしいです！録音した自分の声を聴き返し、不自然な間がないかチェックしつつ、文章の文字数も各200字以上（全体で1000文字以上）を目指してブラッシュアップしていきましょう。`;
                 } else if (totalChars < 1200) {
-                    // 普通レベル
-                    rank1 = "B"; pct1 = 70;
-                    rank2 = "C"; pct2 = 58;
-                    rank3 = "B"; pct3 = 68;
-                    totalRank = "C+";
+                    rank1 = "B"; pct1 = 75;
+                    rank2 = "B"; pct2 = 72;
+                    rank3 = "B"; pct3 = 70;
+                    totalRank = "B";
                     scoreValue.innerHTML = `<span style="color: var(--text-main)">${totalRank}</span>`;
-                    feedback = `<strong>【AI一括シート分析結果】</strong><br>最低限の構成はできていますが、合格ラインに届くにはもう一歩改善が必要です。1問ずつの繋がり（論理の一貫性）は意識されていますが、使われている語彙が一般的（無難）すぎて、他の受験生の中に埋もれてしまうリスクがあります。<strong>${targetSchool}のポリシー（${capturedPolicy}）</strong>をただキーワードとしてなぞるだけでなく、「だから自分はこの学びが必要なんだ」というエピソードの説得力を補強してください。`;
+                    feedback = `<strong>【AI一括シート分析結果】</strong><br>手堅くまとまった良いシートです！すべての質問に対して十分な熱意と論理が展開されています。<strong>${targetSchool}のアドミッション・ポリシー（${capturedPolicy}）</strong>を構成の軸にできている点が評価できます。さらに上のA評価を狙うためには、声に出したときの「話しやすさ」も意識し、録音ツールで聞き返しながら一文を短く洗練させていくのがコツです。`;
                 } else {
-                    // 高評価
-                    rank1 = "A"; pct1 = 88;
-                    rank2 = "A"; pct2 = 85;
-                    rank3 = "A"; pct3 = 90;
+                    rank1 = "A"; pct1 = 92;
+                    rank2 = "A"; pct2 = 88;
+                    rank3 = "A"; pct3 = 94;
                     totalRank = "A";
                     scoreValue.innerHTML = `<span style="color: var(--success)">${totalRank}</span>`;
-                    feedback = `<strong>【AI一括シート分析結果】</strong><br>素晴らしい完成度です！すべての質問に対して十分な情報量が記述されており、自己分析と志望校研究が深く行われていることが伝わります。前半の挫折や強みの話が、最後の5問目である「${targetSchool}への絶対的な熱意」へと綺麗に伏線回収されており、論理的一貫性が極めて高いです。このシートの内容をベースに、実際の口頭面接でもハキハキと話せるよう声出しの練習に移りましょう！`;
+                    feedback = `<strong>【AI一括シート分析結果】</strong><br>文句なしの最高評価（Aランク）です！テキストの論理的一貫性が極めて高く、すべての質問の答えが一本の太いストーリー（あなたの軸）に繋がっています。各解答欄に内蔵された録音機能を使い、この素晴らしいテキストを「何も見ずに自然なトーンで喋れるか」の最終段階の練習に取り組んでください。合格はすぐそこです！`;
                 }
 
                 m1Score.innerText = rank1;
@@ -530,14 +498,16 @@
             }, 2500);
         });
 
-        // 全リセット
+        // リセット
         globalResetBtn.addEventListener('click', () => {
-            if (!confirm("現在の入力内容をすべて消去し、別の新しい質問をランダムに引き直しますか？")) return;
+            if (!confirm("現在の入力内容と録音データをすべて消去し、別の新しい質問をランダムに引き直しますか？")) return;
             targetSchool = "";
             headerSchoolName.innerText = "志望校: 未設定";
             schoolInput.value = "";
-            sheetCard.innerHTML = `<div style="text-align: center; color: var(--text-sub); padding: 20px;">志望校を入力すると、ここに5つの質問と解答欄が生成されます。</div>`;
-            disableAnalyzeButton();
+            sheetCard.innerHTML = `<div style="text-align: center; color: var(--text-sub); padding: 20px;">志望校を入力すると、ここに質問、テキスト入力欄、音声録音機能が生成されます。</div>`;
+            analyzeBtn.disabled = true;
+            analyzeBtn.classList.remove('btn-success');
+            analyzeBtn.classList.add('btn-outline');
             analysisResult.style.display = 'none';
             loader.style.display = 'none';
             m1Bar.style.width = `0%`; m2Bar.style.width = `0%`; m3Bar.style.width = `0%`;
@@ -545,12 +515,6 @@
             modalError.style.display = "none";
             schoolModal.style.display = 'flex';
         });
-
-        function disableAnalyzeButton() {
-            analyzeBtn.disabled = true;
-            analyzeBtn.classList.remove('btn-success');
-            analyzeBtn.classList.add('btn-outline');
-        }
     </script>
 </body>
 </html>
